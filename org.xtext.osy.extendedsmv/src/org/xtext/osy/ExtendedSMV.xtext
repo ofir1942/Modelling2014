@@ -1,0 +1,68 @@
+grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
+
+generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
+
+Model:
+	(sections += Section)*
+;
+Section:
+	VariablesSection | Assignments
+;
+
+VariablesSection:
+	{VariablesSection}
+	'VAR'
+	(variables += VariableDeclaration)+;
+	
+Assignments:
+	{Assignments}
+	'ASSIGN'
+	(assignments += AssignmentExpression)+
+;
+	
+VariableDeclaration:
+	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration
+;
+
+IntegerDeclarion:
+	name=ID ':' 'integer' ';'
+;
+
+BooleanDeclarion:
+	name=ID ':' 'boolean' ';'
+;
+
+StateVariableDeclaration:
+	name=ID ':' '{' states += ID (',' states += ID )* '}' ';'
+;
+
+
+
+//VarType:
+//	'boolean' | 'integer'
+//;
+
+AssignmentExpression:
+	IntegerAssignment | BooleanAssignment | StateAssignment
+;
+
+BooleanAssignment:
+	'init' '(' var = [BooleanDeclarion] ')' ':=' value=BOOL ';'
+;
+
+BOOL:
+	'True' | 'False'
+;
+
+IntegerAssignment:
+	'init' '(' var = [IntegerDeclarion] ')' ':=' value=INT ';'
+;
+
+StateAssignment:
+	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=ID ';'
+;
+
+//
+	
+
+
