@@ -1,0 +1,83 @@
+grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
+
+generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
+
+Model:
+	(sections += Section)*
+;
+Section:
+	VariablesSection | Assignments | Transactions //| Comments
+;
+
+Comment: 
+	comment = SMV_COMMENT
+;
+
+terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
+
+
+VariablesSection:
+	'VAR'
+	(variables += VariableDeclaration)+;
+	
+Assignments:
+	{Assignments}
+	'ASSIGN'
+	(assignments += AssignmentExpression)+
+;
+
+Transactions:
+	'TRANS'
+	(transaction += TransactionStatement)+
+;
+
+TransactionStatement:
+	name = ID
+;
+	
+VariableDeclaration:
+	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration | Comment
+;
+
+IntegerDeclarion:
+	name=ID ':' 'integer' ';'
+;
+
+BooleanDeclarion:
+	name=ID ':' 'boolean' ';'
+;
+
+StateVariableDeclaration:
+	name=ID ':' '{' states += ID (',' states += ID )* '}' ';'
+;
+
+
+
+//VarType: 
+//	'boolean' | 'integer'
+//;
+
+AssignmentExpression:
+	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
+;
+
+BooleanAssignment:
+	'init' '(' var = [BooleanDeclarion] ')' ':=' value=BOOL ';'
+;
+
+BOOL:
+	'True' | 'False'
+;
+
+IntegerAssignment:
+	'init' '(' var = [IntegerDeclarion] ')' ':=' value=INT ';'
+;
+
+StateAssignment:
+	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=ID ';'
+;
+
+//
+	
+
+
