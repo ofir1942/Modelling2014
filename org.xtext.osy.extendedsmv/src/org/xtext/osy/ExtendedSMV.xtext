@@ -40,7 +40,7 @@ TransactionPrecondition:
 ;
 
 PreconditionStatement:
-	IntegerPrecondition | BooleanPrecondition | StatePrecondition 
+	IntegerPrecondition | BooleanPrecondition | StatePrecondition  | Comment
 ;
 
 StatePrecondition:
@@ -56,6 +56,31 @@ IntegerPrecondition:
 ;
 
 PostTransaction: 
+	postTransactions += PostTransactionStatement 
+	( logicalOperator += AND_OR postTransactions += PostTransactionStatement )*
+;
+
+PostTransactionStatement:
+	ConditionalPostTRansaction | SimplePostTransaction //| Comment
+;
+
+SimplePostTransaction:
+	IntegerPostTransaction | BooleanPostTransaction | StatePostTransaction //| Comment 
+;
+
+StatePostTransaction:
+	'next' '(' var = [StateVariableDeclaration] ')' '=' value = ID
+;
+
+BooleanPostTransaction:
+	'next' '(' var = [BooleanDeclarion] ')' '=' value = BOOL
+;
+
+IntegerPostTransaction:
+	'next' '(' var = [IntegerDeclarion] ')' '=' value = INT
+;
+
+ConditionalPostTRansaction:
 	name = ID
 ;
 	
