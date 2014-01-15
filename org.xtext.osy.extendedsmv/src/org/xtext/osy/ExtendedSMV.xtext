@@ -14,7 +14,7 @@ Comment:
 ;
 
 terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
-
+terminal AND_OR : '&' | '|' ;
 
 VariablesSection:
 	'VAR'
@@ -32,6 +32,30 @@ Transactions:
 ;
 
 TransactionStatement:
+	precondition = TransactionPrecondition '->' postTransaction = PostTransaction
+;
+
+TransactionPrecondition: 
+	preconditions += PreconditionStatement ( logicalOperator += AND_OR preconditions += PreconditionStatement)*  
+;
+
+PreconditionStatement:
+	IntegerPrecondition | BooleanPrecondition | StatePrecondition 
+;
+
+StatePrecondition:
+	var = [StateVariableDeclaration] '=' value=ID
+;
+
+BooleanPrecondition:
+	var = [BooleanDeclarion] '=' value=BOOL
+;
+
+IntegerPrecondition:
+	var = [IntegerDeclarion] '=' value=INT
+;
+
+PostTransaction: 
 	name = ID
 ;
 	
