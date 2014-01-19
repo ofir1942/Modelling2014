@@ -1,0 +1,131 @@
+grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
+
+generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
+
+Model:
+	(sections += Section)*
+;
+Section:
+	VariablesSection | Assignments | Transactions //| Comments
+;
+
+Comment: 
+	comment = SMV_COMMENT
+;
+
+terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
+terminal AND_OR : '&' | '|' ;
+
+VariablesSection:
+	'VAR'
+	(variables += VariableDeclaration)+;
+	
+Assignments:
+	{Assignments}
+	'ASSIGN'
+	(assignments += AssignmentExpression)+
+;
+
+Transactions:
+	'TRANS'
+	(transaction += TransactionStatement)+
+;
+
+TransactionStatement:
+	precondition = TransactionPrecondition '->' postTransaction = PostTransaction
+;
+
+TransactionPrecondition: 
+	preconditions += PreconditionStatement ( logicalOperator += AND_OR preconditions += PreconditionStatement)*  
+;
+
+PreconditionStatement:
+	IntegerPrecondition | BooleanPrecondition | StatePrecondition  | Comment
+;
+
+StatePrecondition:
+	var = [StateVariableDeclaration] '=' value=ID
+;
+
+BooleanPrecondition:
+	var = [BooleanDeclarion] '=' value=BOOL
+;
+
+IntegerPrecondition:
+	var = [IntegerDeclarion] '=' value=INT
+;
+
+PostTransaction: 
+	postTransactions += PostTransactionStatement 
+	( logicalOperator += AND_OR postTransactions += PostTransactionStatement )*
+;
+
+PostTransactionStatement:
+	ConditionalPostTRansaction | SimplePostTransaction //| Comment
+;
+
+SimplePostTransaction:
+	IntegerPostTransaction | BooleanPostTransaction | StatePostTransaction //| Comment 
+;
+
+StatePostTransaction:
+	'next' '(' var = [StateVariableDeclaration] ')' '=' value = ID
+;
+
+BooleanPostTransaction:
+	'next' '(' var = [BooleanDeclarion] ')' '=' value = BOOL
+;
+
+IntegerPostTransaction:
+	'next' '(' var = [IntegerDeclarion] ')' '=' value = INT
+;
+
+ConditionalPostTRansaction:
+	name = ID
+;
+	
+VariableDeclaration:
+	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration | Comment
+;
+
+IntegerDeclarion:
+	name=ID ':' 'integer' ';'
+;
+
+BooleanDeclarion:
+	name=ID ':' 'boolean' ';'
+;
+
+StateVariableDeclaration:
+	name=ID ':' '{' states += ID (',' states += ID )* '}' ';'
+;
+
+
+//VarType: 
+//	'boolean' | 'integer'
+//;
+
+AssignmentExpression:
+	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
+;
+
+BooleanAssignment:
+	'init' '(' var = [BooleanDeclarion] ')' ':=' value=BOOL ';'
+;
+
+BOOL:
+	'True' | 'False'
+;
+
+IntegerAssignment:
+	'init' '(' var = [IntegerDeclarion] ')' ':=' value=INT ';'
+;
+
+StateAssignment:
+	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=ID ';'
+;
+
+//
+	
+
+
