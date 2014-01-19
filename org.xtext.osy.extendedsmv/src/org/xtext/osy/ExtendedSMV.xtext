@@ -101,7 +101,6 @@ StateVariableDeclaration:
 ;
 
 
-
 //VarType: 
 //	'boolean' | 'integer'
 //;

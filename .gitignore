@@ -2,7 +2,6 @@ org.xtext.osy.extendedsmv.ui/src-gen/
 org.xtext.osy.extendedsmv.ui/xtend-gen/org/xtext/osy/ui/contentassist/.ExtendedSMVProposalProvider.java._trace
 org.xtext.osy.extendedsmv.ui/xtend-gen/org/xtext/osy/ui/labeling/.ExtendedSMVLabelProvider.java._trace
 org.xtext.osy.extendedsmv.ui/xtend-gen/
-*.xtend
 org.xtext.osy.extendedsmv/src-gen/
 org.xtext.osy.extendedsmv/model/generated/
 org.xtext.osy.extendedsmv/xtend-gen/
