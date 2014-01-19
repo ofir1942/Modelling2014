@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="extendedSMV" nsURI="http://www.xtext.org/osy/ExtendedSMV" nsPrefix="extendedSMV">
+  <eClassifiers xsi:type="ecore:EClass" name="Model">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sections" upperBound="-1"
+        eType="#//Section" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Section"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Comment" eSuperTypes="#//PreconditionStatement #//VariableDeclaration #//AssignmentExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="comment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="VariablesSection" eSuperTypes="#//Section">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variables" upperBound="-1"
+        eType="#//VariableDeclaration" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Assignments" eSuperTypes="#//Section">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assignments" upperBound="-1"
+        eType="#//AssignmentExpression" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Transactions" eSuperTypes="#//Section">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transaction" upperBound="-1"
+        eType="#//TransactionStatement" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransactionStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="precondition" eType="#//TransactionPrecondition"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="postTransaction" eType="#//PostTransaction"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransactionPrecondition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="preconditions" upperBound="-1"
+        eType="#//PreconditionStatement" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicalOperator" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PreconditionStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatePrecondition" eSuperTypes="#//PreconditionStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//StateVariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanPrecondition" eSuperTypes="#//PreconditionStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//BooleanDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerPrecondition" eSuperTypes="#//PreconditionStatement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//IntegerDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PostTransaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="postTransactions" upperBound="-1"
+        eType="#//PostTransactionStatement" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="logicalOperator" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PostTransactionStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SimplePostTransaction" eSuperTypes="#//PostTransactionStatement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatePostTransaction" eSuperTypes="#//SimplePostTransaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//StateVariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanPostTransaction" eSuperTypes="#//SimplePostTransaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//BooleanDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerPostTransaction" eSuperTypes="#//SimplePostTransaction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//IntegerDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConditionalPostTRansaction" eSuperTypes="#//PostTransactionStatement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerDeclarion" eSuperTypes="#//VariableDeclaration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanDeclarion" eSuperTypes="#//VariableDeclaration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateVariableDeclaration" eSuperTypes="#//VariableDeclaration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="states" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanAssignment" eSuperTypes="#//AssignmentExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//BooleanDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerAssignment" eSuperTypes="#//AssignmentExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//IntegerDeclarion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateAssignment" eSuperTypes="#//AssignmentExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="var" eType="#//StateVariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>
