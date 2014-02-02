@@ -3,11 +3,18 @@ grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
 generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
 
 Model:
+	(modules += Module)*
+;
+
+Module:
+	'MODULE' name=ID
 	(sections += Section)*
 ;
+
 Section:
-	VariablesSection | Assignments | Transactions //| Comments
+	VariablesSection | Assignments | Transactions  //| Comments
 ;
+
 
 Comment: 
 	comment = SMV_COMMENT
@@ -16,14 +23,15 @@ Comment:
 terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
 terminal AND_OR : '&' | '|' ;
 
-VariablesSection:
+VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
 	'VAR'
-	(variables += VariableDeclaration)+;
+	(variables += VariableDeclaration)*
+;
 	
 Assignments:
 	{Assignments}
 	'ASSIGN'
-	(assignments += AssignmentExpression)+
+	(assignments += AssignmentExpression)*
 ;
 
 Transactions:
