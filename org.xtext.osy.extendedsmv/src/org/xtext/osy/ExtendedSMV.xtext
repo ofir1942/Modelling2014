@@ -8,13 +8,15 @@ Model:
 
 Module:
 	'MODULE' name=ID
+	// @YE: the params' expression is included in parentheses with question mark,
+	// because parameter list may be empty like in this example: Module A()  
+	('(' ((params += ID) (',' params += ID)*)? ')')?
 	(sections += Section)*
 ;
 
 Section:
 	VariablesSection | Assignments | Transactions  //| Comments
 ;
-
 
 Comment: 
 	comment = SMV_COMMENT
