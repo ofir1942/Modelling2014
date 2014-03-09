@@ -9,15 +9,15 @@ Model:
 ;
 
 Module:
-	'MODULE' name=ID
+	'MODULE' name=IDENTIFIER
 	// @YE: the params' expression is included in parentheses with question mark,
 	// because parameter list may be empty like in this example: Module A()  
-	('(' ((params += ID) (',' params += ID)*)? ')')?
+	('(' ((params += IDENTIFIER) (',' params += IDENTIFIER)*)? ')')?
 	(sections += Section)*
 ;
 
 Section:
-	VariablesSection | Assignments | Transactions //| Comments
+	VariablesSection | Assignments | Transactions | LTLSpecification //| Comments
 ;
 
 InitConstraint:
@@ -43,9 +43,13 @@ InVarConstraint:
 //	'E' '[' CTLExpression 'U' CTLExpression ']'
 //;
 
-//LTLSpecification:
-//	'LTLSPEC' LTLExpression ';'?
-//;
+LTLSpecification:
+	'LTLSPEC' LTLExpression ';'?
+;
+
+LTLExpression: 
+	'G' IDENTIFIER
+;
 
 //LTLExpression:
 //	SimpleExpression | '(' LTLExpression ')' | '!' LTLExpression | 
@@ -91,7 +95,7 @@ Range:
 //	'COMPASSION' '(' SimpleExpression ',' SimpleExpression ')' ';'?
 //;
 
-SimpleExpression: //TODO: Note that simple expressions cannot contain next operators
+SimpleExpression returns Expression: //TODO: Note that simple expressions cannot contain next operators
 	BasicExpression
 ;
 
@@ -136,17 +140,18 @@ SimpleExpression: //TODO: Note that simple expressions cannot contain next opera
 //	'l'
 //;
 
-//SetBodyExpr returns Expression:
-//	BasicExpression | SetBodyExpr ',' {BasicExpression.left=current}
-//;
+SetBodyExpression returns Expression:
+  {SetBodyExpression}
+  '{' expressions+=SimpleExpression (',' expressions+=SimpleExpression)* '}'
+;
 
 Constant:
 	BooleanConstant | IntegerConstant | SymbolicConstant | WordConstant | RangeConstant   
 ;
 
-BooleanConstant: 
-	BOOL
-;
+//BooleanConstant: 
+//	BOOL
+//;
 
 IntegerConstant: 
 	IntegerNumber
@@ -202,22 +207,22 @@ DefineIdentifier:
 	ComplexIdentifier
 ;
 
-VariableIdentifier:
+VariableIdentifier returns Expression:
 	ComplexIdentifier
 ;
 
-ComplexIdentifier:
+ComplexIdentifier returns Expression:
 	('self' | IDENTIFIER) ComplexIdentifierTag?
 	//IDENTIFIER | ComplexIdentifier '.' IDENTIFIER // | ComplexIdentifier '[' SimpleExpression ']' | 'self'
 	;
 
-ComplexIdentifierTag:
+ComplexIdentifierTag returns Expression:
 	('.'IDENTIFIER) ComplexIdentifierTag? | '[' SimpleExpression ']'
 ;
 
 terminal IDENTIFIER:
 	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
-	('a' .. 'z') |( 'A' .. 'Z') | '_' ('a' .. 'z' | 'A' .. 'Z' | '_' | DIGIT | '$' | '#' | '-')* 
+	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
 ;
 
 //terminal IDENTIFIER_FIRST_CHARACTER:
@@ -237,9 +242,9 @@ CaseExpr:
 	'case' CaseBody 'esac'
 ;
 
-CaseBody:
-	(BasicExpression ':' {BasicExpression.left=current} ';') {CaseBody.left=current}
-;
+//CaseBody:
+//	(BasicExpression ':' {BasicExpression.left=current} ';') {CaseBody.left=current}
+//;
 
 
 Comment: 
@@ -279,7 +284,7 @@ PreconditionStatement:
 ;
 
 StatePrecondition:
-	var = [StateVariableDeclaration] '=' value=ID
+	var = [StateVariableDeclaration] '=' value=IDENTIFIER
 ;
 
 BooleanPrecondition:
@@ -304,7 +309,7 @@ SimplePostTransaction:
 ;
 
 StatePostTransaction:
-	'next' '(' var = [StateVariableDeclaration] ')' '=' value = ID
+	'next' '(' var = [StateVariableDeclaration] ')' '=' value = IDENTIFIER
 ;
 
 BooleanPostTransaction:
@@ -316,7 +321,7 @@ IntegerPostTransaction:
 ;
 
 ConditionalPostTRansaction:
-	name = ID
+	name = IDENTIFIER
 ;
 	
 VariableDeclaration:
@@ -324,15 +329,15 @@ VariableDeclaration:
 ;
 
 IntegerDeclarion:
-	name=ID ':' 'integer' ';'
+	name=IDENTIFIER ':' 'integer' ';'
 ;
 
 BooleanDeclarion:
-	name=ID ':' 'boolean' ';'
+	name=IDENTIFIER ':' 'boolean' ';'
 ;
 
 StateVariableDeclaration:
-	name=ID ':' '{' states += ID (',' states += ID )* '}' ';'
+	name=IDENTIFIER ':' '{' states += IDENTIFIER (',' states += IDENTIFIER )* '}' ';'
 ;
 
 
@@ -340,18 +345,40 @@ StateVariableDeclaration:
 //	'boolean' | 'integer'
 //;
 
+//AssignmentExpression:
+//	id = ComplexIdentifier ':=' expression = SimpleExpression |
+//	InitAssignment | NextAssignment |
+//	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
+//;
+//
+//InitAssignment:
+//	'init' '(' ComplexIdentifier ')' ':=' {SimpleExpression.assign2=current}
+//;
+//
+//NextAssignment:
+//	'next' '(' ComplexIdentifier ')' ':=' {BasicExpression.assign3=current}
+//;
+
 AssignmentExpression:
-	ComplexIdentifier ':=' {SimpleExpression.assign1=current} |
-	InitAssignment | NextAssignment |
-	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
+  SimpleAssign
+  | InitAssign
+  | NextAssign
 ;
 
-InitAssignment:
-	'init' '(' ComplexIdentifier ')' ':=' {SimpleExpression.assign2=current}
+SimpleAssign:
+  id=ComplexIdentifier ':=' expression=SimpleExpression semicolon?=';'?
 ;
 
-NextAssignment:
-	'next' '(' ComplexIdentifier ')' ':=' {BasicExpression.assign3=current}
+InitAssign:
+  'init' '(' id=ComplexIdentifier ')' ':=' expression=SimpleExpression semicolon?=';'?
+;
+
+NextAssign:
+  'next' '(' id=ComplexIdentifier ')' ':=' expression=NextExpression semicolon?=';'?
+;
+
+NextExpression returns Expression:
+  SimpleExpression
 ;
 
 BooleanAssignment:
@@ -367,7 +394,7 @@ IntegerAssignment:
 ;
 
 StateAssignment:
-	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=ID ';'
+	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=IDENTIFIER ';'
 ;
 
 	
@@ -468,25 +495,47 @@ BasicOpWordConcatenation:
   '::';
   
 UnaryExclamationExpression returns Expression:
-	SetExpression | {UnaryExclamationExpression} feature=BasicExclamationOpUnary expression=UnaryExclamationExpression
+	UnaryExpression | {UnaryExclamationExpression} feature=BasicExclamationOpUnary expression=UnaryExclamationExpression
 ;
 
 BasicExclamationOpUnary:
 	'!'
 ;
 
-SetExpression:
-	IndexExpression | RangeExpression | CommaExpression
+//SetExpression:
+//	IndexExpression | RangeExpression | CommaExpression
+//;
+
+//IndexExpression:
+//	'[' INT ']'
+//;
+//
+//RangeExpression:
+//	'[' Range ']'
+//;
+//
+//CommaExpression:
+//	INT ',' INT
+//;
+
+
+UnaryExpression returns Expression:
+	Case | VariableIdentifier | BooleanConstant | SetBodyExpression
 ;
 
-IndexExpression:
-	'[' INT ']'
+BooleanConstant returns Expression: 
+  {BooleanConstant} 
+  (isTrue?='TRUE'|'FALSE')
 ;
 
-RangeExpression:
-	'[' Range ']'
+Case returns Expression:
+  {Case}
+  'case'
+    (caseBodies+=CaseBody)+
+  'esac'
 ;
 
-CommaExpression:
-	INT ',' INT
+CaseBody returns Expression:
+  {CaseBody}
+  case = SimpleExpression ':' assigment=SimpleExpression ';'
 ;
