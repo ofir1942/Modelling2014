@@ -1,5 +1,7 @@
 grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
 
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
 generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
 
 Model:
@@ -15,15 +17,238 @@ Module:
 ;
 
 Section:
-	VariablesSection | Assignments | Transactions  //| Comments
+	VariablesSection | Assignments | Transactions //| Comments
 ;
+
+InitConstraint:
+	'INIT' SimpleExpression ';'?
+;
+
+InVarConstraint:
+	'INVAR' SimpleExpression ';'?
+;
+
+//CTLSpecification:
+//	'SPEC' CTLExpression
+//;
+
+//CTLExpression:
+//	SimpleExpression | '(' CTLExpression ')' | '!' CTLExpression | 
+//	CTLExpression '&' CTLExpression | CTLExpression '|' CTLExpression |
+//	CTLExpression 'xor' CTLExpression | CTLExpression 'xnor' CTLExpression |
+//	CTLExpression '->' CTLExpression | CTLExpression '<->' CTLExpression |
+//	'EG' CTLExpression | 'EX' CTLExpression | 'EF' CTLExpression |
+//	'AG' CTLExpression | 'AX' CTLExpression | 'AF' CTLExpression |
+//	'E' '[' CTLExpression 'U' CTLExpression ']' | 
+//	'E' '[' CTLExpression 'U' CTLExpression ']'
+//;
+
+//LTLSpecification:
+//	'LTLSPEC' LTLExpression ';'?
+//;
+
+//LTLExpression:
+//	SimpleExpression | '(' LTLExpression ')' | '!' LTLExpression | 
+//	LTLExpression '&' LTLExpression | LTLExpression '|' LTLExpression |
+//	LTLExpression 'xor' LTLExpression | LTLExpression 'xnor' LTLExpression |
+//	LTLExpression '->' LTLExpression | LTLExpression '<->' LTLExpression |
+//	'X' LTLExpression | 'G' LTLExpression | 'F' LTLExpression |
+//	LTLExpression 'U' LTLExpression | LTLExpression 'V' LTLExpression | 
+//	'Y' LTLExpression | 'Z' LTLExpression | 'H' LTLExpression | 'O' LTLExpression |
+//	LTLExpression 'S' LTLExpression | LTLExpression 'T' LTLExpression
+//;
+
+//InVarSpecification:
+//	'INVARSPEC' SimpleExpression ';'
+//;
+//
+//ISADecleration: //TODO: this is derecated maybe we should remove this!
+//	 'ISA' IDENTIFIER
+//;
+//
+//ComputeSpecification:
+//	'COMPUTE' ComputeExpression
+//;
+
+//ComputeExpression:
+//	'MIN' '[' RTCTLExpression ',' RTCTLExpression ']' |
+//	'MAX' '[' RTCTLExpression ',' RTCTLExpression ']'
+//;
+//
+//RTCTLExpression:
+//	CTLExpression | 'EBF' Range RTCTLExpression | 'ABF' Range RTCTLExpression |
+//	'EBG' Range RTCTLExpression | 'ABG' Range RTCTLExpression |
+//	'A' '[' RTCTLExpression 'BU' Range RTCTLExpression  ']' |
+//	'E' '[' RTCTLExpression 'BU' Range RTCTLExpression  ']' 
+//;
+
+Range: 
+	IntegerNumber '..' IntegerNumber
+;
+
+//FairnessConsratint:
+//	'FAIRNESS' SimpleExpression ';'? | 'JUSTICE' SimpleExpression ';'? |
+//	'COMPASSION' '(' SimpleExpression ',' SimpleExpression ')' ';'?
+//;
+
+SimpleExpression: //TODO: Note that simple expressions cannot contain next operators
+	BasicExpression
+;
+
+//BasicExpression:
+//	Constant | VariableIdentifier | DefineIdentifier |
+//	'(' BasicExpression ')' | '!' BasicExpression | BasicExpression '&' BasicExpression |
+//	BasicExpression '|' BasicExpression | BasicExpression 'xor' BasicExpression | 
+//	BasicExpression 'xnor' BasicExpression | BasicExpression '->' BasicExpression |
+//	BasicExpression '<->' BasicExpression | BasicExpression '=' BasicExpression |
+//	BasicExpression '!=' BasicExpression | BasicExpression '<' BasicExpression | 
+//	BasicExpression '>' BasicExpression | BasicExpression '<=' BasicExpression | 
+//	BasicExpression '>=' BasicExpression | '-' BasicExpression | 
+//	BasicExpression '+' BasicExpression | BasicExpression '-' BasicExpression |
+//	BasicExpression '*' BasicExpression  | BasicExpression '/' BasicExpression |
+//	BasicExpression 'mod' BasicExpression | BasicExpression '>>' BasicExpression |
+//	BasicExpression '<<' BasicExpression | BasicExpression '[' Index ']' |
+//	BasicExpression '[' IntegerNumber ':' IntegerNumber ']' |
+//	BasicExpression '::' BasicExpression | 
+//	'word1 (' BasicExpression ')' | 'bool (' BasicExpression ')' | 'toint (' BasicExpression ')' | 
+//	'signed (' BasicExpression ')' | 'unsigned (' BasicExpression ')' | 
+//	'extend (' BasicExpression ',' BasicExpression ')' | 'resize (' BasicExpression ',' BasicExpression ')' |
+//	BasicExpression 'union' BasicExpression | '{' SetBodyExpr '}' | BasicExpression 'in' BasicExpression |
+//	BasicExpression '?' BasicExpression ':' BasicExpression | 'count (' BasicExpression ')' |
+//	CaseExpr | 'next' '(' BasicExpression ')'    
+//		
+//;
+
+//BasicExpression returns Expression:
+//	AND
+//;
+//
+//
+//AND returns Expression:
+//	OR ({BinaryExpression.left=current} feature=AND_SYMBOL right=OR)*
+//;
+//
+//AND_SYMBOL:
+//	'&'
+//;
+//
+//OR:
+//	'l'
+//;
+
+//SetBodyExpr returns Expression:
+//	BasicExpression | SetBodyExpr ',' {BasicExpression.left=current}
+//;
+
+Constant:
+	BooleanConstant | IntegerConstant | SymbolicConstant | WordConstant | RangeConstant   
+;
+
+BooleanConstant: 
+	BOOL
+;
+
+IntegerConstant: 
+	IntegerNumber
+;
+
+SymbolicConstant:
+	IDENTIFIER
+;
+
+WordConstant:
+	'0' WordSignSpecifier? WordBase WordWidth? '_' WordValue
+;
+
+WordSignSpecifier:
+	'u' | 's'
+;
+
+WordBase:
+	'b' | 'B' | 'o' | 'O' | 'd' | 'D' | 'h' | 'H'
+;
+
+WordWidth:
+	IntegerNumber //TODO: must be possitive - check that this if possitive with a validator rule
+;
+
+WordValue:
+	HexDigit | WordValueTAG 
+;
+
+WordValueTAG:
+	HexDigit WordValue
+;
+
+HexDigit:
+	'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
+	'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' |
+	'E' | 'F' 
+;
+
+RangeConstant:
+	IntegerNumber '..' IntegerNumber
+;
+
+IntegerNumber:
+	INT // TODO: this is not exactly an int - CHECK THIS PLEASE
+	//'-' DIGIT | DIGIT | IntegerNumber DIGIT
+;
+
+DIGIT:
+	'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+;
+
+DefineIdentifier:
+	ComplexIdentifier
+;
+
+VariableIdentifier:
+	ComplexIdentifier
+;
+
+ComplexIdentifier:
+	('self' | IDENTIFIER) ComplexIdentifierTag?
+	//IDENTIFIER | ComplexIdentifier '.' IDENTIFIER // | ComplexIdentifier '[' SimpleExpression ']' | 'self'
+	;
+
+ComplexIdentifierTag:
+	('.'IDENTIFIER) ComplexIdentifierTag? | '[' SimpleExpression ']'
+;
+
+IDENTIFIER:
+	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
+	('a' |'z' | 'A' | 'Z' | '_') ('a'|'z' | 'A'|'Z' | '_' | DIGIT | '$' | '#' | '-')* 
+;
+
+//terminal IDENTIFIER_FIRST_CHARACTER:
+//	('a'..'z' | 'A'..'Z' | '_')
+//;
+
+//IdentifierConsecutiveCharacter:
+//	IDENTIFIER_FIRST_CHARACTER | DIGIT | '$' | '#' | '-'
+//;
+
+
+Index:
+	IntegerNumber // TODO: Maybe add word[XXX] 
+;
+
+CaseExpr:
+	'case' CaseBody 'esac'
+;
+
+CaseBody:
+	(BasicExpression ':' {BasicExpression.left=current} ';') {CaseBody.left=current}
+;
+
 
 Comment: 
 	comment = SMV_COMMENT
 ;
 
 terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
-terminal AND_OR : '&' | '|' ;
+// terminal AND_OR : '&' | '|' ;
 
 VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
 	'VAR'
@@ -46,7 +271,8 @@ TransactionStatement:
 ;
 
 TransactionPrecondition: 
-	preconditions += PreconditionStatement ( logicalOperator += AND_OR preconditions += PreconditionStatement)*  
+	preconditions += PreconditionStatement 
+	//preconditions += PreconditionStatement ( logicalOperator += AND_OR preconditions += PreconditionStatement)*  
 ;
 
 PreconditionStatement:
@@ -67,7 +293,7 @@ IntegerPrecondition:
 
 PostTransaction: 
 	postTransactions += PostTransactionStatement 
-	( logicalOperator += AND_OR postTransactions += PostTransactionStatement )*
+	//( logicalOperator += AND_OR postTransactions += PostTransactionStatement )*
 ;
 
 PostTransactionStatement:
@@ -116,7 +342,17 @@ StateVariableDeclaration:
 //;
 
 AssignmentExpression:
+	ComplexIdentifier ':=' {SimpleExpression.assign1=current} |
+	InitAssignment | NextAssignment |
 	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
+;
+
+InitAssignment:
+	'init' '(' ComplexIdentifier ')' ':=' {SimpleExpression.assign2=current}
+;
+
+NextAssignment:
+	'next' '(' ComplexIdentifier ')' ':=' {BasicExpression.assign3=current}
 ;
 
 BooleanAssignment:
@@ -124,7 +360,7 @@ BooleanAssignment:
 ;
 
 BOOL:
-	'True' | 'False'
+	'TRUE' | 'FALSE'
 ;
 
 IntegerAssignment:
@@ -135,7 +371,123 @@ StateAssignment:
 	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=ID ';'
 ;
 
-//
 	
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+BasicExpression returns Expression:
+  Implies;
+
+// Shared by Basic, LTL, CTL
+Implies returns Expression:
+  Equivalence ({BinaryExpression.left=current} feature=OpImplies right=Equivalence)*; // TODO: operator precedence
+  
+OpImplies:
+ '->';
+
+// Shared by Basic, LTL, CTL
+Equivalence returns Expression:
+  IfThenElse ({BinaryExpression.left=current} feature=OpEquivalence right=IfThenElse)*;
+  
+OpEquivalence:
+ '<->';
+  
+IfThenElse returns Expression:
+  Or ({IfThenElse.left=current}'?' then=Or ':' else=Or)? //TODO: not sure if OR!!!!!! maybe unaryEX
+;
+  
+Or returns Expression:
+  And ({BinaryExpression.left=current} feature=OpOr right=And)*;
+
+OpOr:
+  'xnor' | '|' | 'xor';
+
+And returns Expression:
+  BasicRelational ({BinaryExpression.left=current} feature=OpAnd right=BasicRelational)*;
+  
+OpAnd:
+  '&';
+ 
+BasicRelational returns Expression:
+  BasicIn ({BinaryExpression.left=current} feature=BasicOpRelational right=BasicIn)*;
+
+BasicOpRelational:
+  '=' | '!=' | '<' | '>' | '<=' | '>=';
+
+BasicIn returns Expression:
+  BasicUnion ({BinaryExpression.left=current} feature=BasicOpIn right=BasicUnion)*;
+
+BasicOpIn:
+ 'in';
+  
+BasicUnion returns Expression:
+  BasicShift ({BinaryExpression.left=current} feature=BasicOpUnion right=BasicShift)*;
+
+BasicOpUnion:
+ 'union';
+
+BasicShift returns Expression:
+  BasicAddSub ({BinaryExpression.left=current} feature=BasicOpShift right=BasicAddSub)*;  
+
+BasicOpShift:
+  '<<'|'>>';
+
+BasicAddSub returns Expression:
+  BasicRemainder ({BinaryExpression.left=current} feature=BasicOpAddSub right=BasicRemainder)*;  
+
+BasicOpAddSub:
+  '+'|'-';
+
+BasicRemainder returns Expression:
+  UnaryMinusExpression ({BinaryExpression.left=current} feature=BasicOpRemainder right=UnaryMinusExpression)*;
+  
+BasicOpRemainder:
+  'mod' | '*' | '/';  
+
+UnaryMinusExpression returns Expression:
+	BasicWordConcatenation | {UnaryMinusExpression} feature=BasicMinusOpUnary expression=UnaryMinusExpression
+;
+
+BasicMinusOpUnary:
+	'-'
+;
+
+BasicWordConcatenation returns Expression:
+   UnaryExclamationExpression ({BinaryExpression.left=current} feature=BasicOpWordConcatenation right=UnaryExclamationExpression)*;
+
+BasicOpWordConcatenation:
+  '::';
+  
+UnaryExclamationExpression returns Expression:
+	SetExpression | {UnaryExclamationExpression} feature=BasicExclamationOpUnary expression=UnaryExclamationExpression
+;
+
+BasicExclamationOpUnary:
+	'!'
+;
+
+SetExpression:
+	IndexExpression | RangeExpression | CommaExpression
+;
+
+IndexExpression:
+	'[' INT ']'
+;
+
+RangeExpression:
+	'[' Range ']'
+;
+
+CommaExpression:
+	INT ',' INT
+;
