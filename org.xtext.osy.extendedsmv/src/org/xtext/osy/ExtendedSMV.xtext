@@ -17,7 +17,7 @@ Module:
 ;
 
 Section:
-	VariablesSection | Assignments | Transactions | LTLSpecification //| Comments
+	VariablesSection //| Assignments | Transactions | LTLSpecification //| Comments
 ;
 
 InitConstraint:

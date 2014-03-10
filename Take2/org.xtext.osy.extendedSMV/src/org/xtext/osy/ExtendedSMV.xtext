@@ -2,8 +2,57 @@ grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
 
 generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
 
+
+
 Model:
-	greetings+=Greeting*;
+	(modules += Module)*
+;
 	
-Greeting:
-	'Hello' name=ID '!';
+
+Module:
+	'MODULE' name=IDENTIFIER
+	// @YE: the params' expression is included in parentheses with question mark,
+	// because parameter list may be empty like in this example: Module A()  
+	//('(' ((params += IDENTIFIER) (',' params += IDENTIFIER)*)? ')')?
+	(sections += Section)*
+;
+
+Section:
+	VariablesSection //| Assignments | Transactions | LTLSpecification //| Comments
+;
+
+VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
+	'VAR'
+	(variables += VariableDeclaration)+
+;
+
+VariableDeclaration:
+	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration | Comment
+;
+
+IntegerDeclarion:
+	name=IDENTIFIER ':' 'integer' ';'
+;
+
+BooleanDeclarion:
+	name=IDENTIFIER ':' 'boolean' ';'
+;
+
+StateVariableDeclaration:
+	name=IDENTIFIER ':' '{' states += IDENTIFIER (',' states += IDENTIFIER )* '}' ';'
+;
+
+Comment: 
+	comment = SMV_COMMENT
+;
+
+terminal fragment DIGIT:
+	('0'..'9')
+;
+
+terminal IDENTIFIER:
+	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
+	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
+;
+
+terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
