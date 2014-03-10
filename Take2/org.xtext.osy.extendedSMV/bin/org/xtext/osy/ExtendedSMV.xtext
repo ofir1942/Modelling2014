@@ -19,7 +19,7 @@ Module:
 ;
 
 Section:
-	VariablesSection  | Assignments //| Transactions | LTLSpecification //| Comments
+	VariablesSection  | Assignments | LTLSpecification //| Transactions | LTLSpecification //| Comments
 ;
 
 VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
@@ -73,7 +73,7 @@ NextAssign:
 CaseAssign:
 	'case' 
 	(caseLiterals += CaseLiteral)+
-	'esac'
+	'esac' ';'
 ;
 
 CaseLiteral:
@@ -85,7 +85,7 @@ CaseNextLiteral:
 ;
 
 CaseCondition:
-	BooleanVar | 'TRUE' | 'FALSE' 
+	condition = BooleanVar | 'TRUE' | 'FALSE' 
 ;
 
 BooleanVar:
@@ -106,6 +106,14 @@ BooleanInit:
 
 StateInit:
 	'init' '(' varName = [StateVariableDeclaration] ')' ':=' value=ID ';'
+;
+
+LTLSpecification:
+	'LTLSPEC' expression = LTLExpression 
+;
+
+LTLExpression: 
+	'G' expression=ID
 ;
 
 //terminal fragment DIGIT:
