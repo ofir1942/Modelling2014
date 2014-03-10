@@ -1,0 +1,9 @@
+grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
+
+generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
