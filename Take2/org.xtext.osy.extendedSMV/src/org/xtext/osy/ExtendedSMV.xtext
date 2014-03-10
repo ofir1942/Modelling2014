@@ -9,16 +9,17 @@ Model:
 ;
 	
 
+
 Module:
-	'MODULE' name=IDENTIFIER
+	'MODULE' name=ID
 	// @YE: the params' expression is included in parentheses with question mark,
 	// because parameter list may be empty like in this example: Module A()  
 	//('(' ((params += IDENTIFIER) (',' params += IDENTIFIER)*)? ')')?
-	(sections += Section)*
+	(sections += Section)+
 ;
 
 Section:
-	VariablesSection //| Assignments | Transactions | LTLSpecification //| Comments
+	VariablesSection  | Assignments //| Transactions | LTLSpecification //| Comments
 ;
 
 VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
@@ -27,32 +28,93 @@ VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to act
 ;
 
 VariableDeclaration:
-	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration | Comment
+	BooleanDeclarion | StateVariableDeclaration//|IntegerDeclarion |  | StateVariableDeclaration | Comment
 ;
-
-IntegerDeclarion:
-	name=IDENTIFIER ':' 'integer' ';'
-;
+//
+//IntegerDeclarion:
+//	name=ID ':' 'integer' ';'
+//;
 
 BooleanDeclarion:
-	name=IDENTIFIER ':' 'boolean' ';'
+	name=ID ':' 'boolean' ';'
 ;
 
 StateVariableDeclaration:
-	name=IDENTIFIER ':' '{' states += IDENTIFIER (',' states += IDENTIFIER )* '}' ';'
+	name=ID ':' possibleStates=StateList ';'
 ;
 
-Comment: 
-	comment = SMV_COMMENT
+StateList:
+	'{' states += ID (',' states += ID )* '}'
+;
+//
+//Comment: 
+//	comment = SMV_COMMENT
+//;
+//
+
+Assignments:
+	'ASSIGN'
+	(assignments += AssignmentExpression)+
+;
+//
+AssignmentExpression:
+  InitAssign
+  | NextAssign
+;
+//
+InitAssign:
+	BooleanInit | StateInit
 ;
 
-terminal fragment DIGIT:
-	('0'..'9')
+NextAssign:
+	'next' '(' varName = [StateVariableDeclaration] ')' ':=' nextStatement = CaseAssign
 ;
 
-terminal IDENTIFIER:
-	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
-	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
+CaseAssign:
+	'case' 
+	(caseLiterals += CaseLiteral)+
+	'esac'
 ;
 
-terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
+CaseLiteral:
+	condition=CaseCondition ':' nextValue=CaseNextLiteral ';'
+;
+
+CaseNextLiteral:
+	nextLiteral = ID | StateList 
+;
+
+CaseCondition:
+	BooleanVar | 'TRUE' | 'FALSE' 
+;
+
+BooleanVar:
+	booleanVar = [BooleanDeclarion]
+;
+
+//BooleanConstant:
+//	val=BOOLEAN_CONSTANT
+//;
+//
+//terminal BOOLEAN_CONSTANT:
+//	( 'TRUE' | 'FALSE' )
+//;
+
+BooleanInit:
+	'init' '(' varName=[BooleanDeclarion] ')' ':=' ( 'TRUE' | 'FALSE' )  ';'
+;
+
+StateInit:
+	'init' '(' varName = [StateVariableDeclaration] ')' ':=' value=ID ';'
+;
+
+//terminal fragment DIGIT:
+//	('0'..'9')
+//;
+//
+//terminal IDENTIFIER:
+//	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
+//	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
+//;
+
+//terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
