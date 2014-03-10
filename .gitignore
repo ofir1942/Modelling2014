@@ -1,0 +1,9 @@
+Take2/org.xtext.osy.extendedSMV.ui/bin/
+Take2/org.xtext.osy.extendedSMV.tests/bin/org/xtext/osy/ExtendedSMVUiInjectorProvider.class
+Take2/org.xtext.osy.extendedSMV.tests/src-gen/
+Take2/org.xtext.osy.extendedSMV.ui/src-gen/
+*.xtend
+Take2/org.xtext.osy.extendedSMV.ui/xtend-gen/
+Take2/org.xtext.osy.extendedSMV/model/generated/
+Take2/org.xtext.osy.extendedSMV/src-gen/
+Take2/org.xtext.osy.extendedSMV.tests/bin/org/xtext/osy/ExtendedSMVInjectorProvider.class
