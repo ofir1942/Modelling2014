@@ -19,7 +19,7 @@ Module:
 ;
 
 Section:
-	VariablesSection  | Assignments | LTLSpecification //| Transactions | LTLSpecification //| Comments
+	Assignments | VariablesSection | LTLSpecification //| Transactions | LTLSpecification //| Comments
 ;
 
 VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
@@ -81,11 +81,19 @@ CaseLiteral:
 ;
 
 CaseNextLiteral:
-	nextLiteral = ID | StateList 
+	SingleState | StateList  
+;
+
+SingleState:
+	state = ID
 ;
 
 CaseCondition:
-	condition = BooleanVar | 'TRUE' | 'FALSE' 
+	BooleanVar | DefaultCondition
+;
+
+DefaultCondition:
+	val = 'TRUE'
 ;
 
 BooleanVar:
@@ -101,11 +109,11 @@ BooleanVar:
 //;
 
 BooleanInit:
-	'init' '(' varName=[BooleanDeclarion] ')' ':=' ( 'TRUE' | 'FALSE' )  ';'
+	'init' '(' varName=[BooleanDeclarion] ')' ':=' value = ( 'TRUE' | 'FALSE' )  ';'
 ;
 
 StateInit:
-	'init' '(' varName = [StateVariableDeclaration] ')' ':=' value=ID ';'
+	'init' '(' (varName = [StateVariableDeclaration]) ')' ':=' value=ID ';'
 ;
 
 LTLSpecification:
@@ -115,6 +123,7 @@ LTLSpecification:
 LTLExpression: 
 	'G' expression=ID
 ;
+
 
 //terminal fragment DIGIT:
 //	('0'..'9')
