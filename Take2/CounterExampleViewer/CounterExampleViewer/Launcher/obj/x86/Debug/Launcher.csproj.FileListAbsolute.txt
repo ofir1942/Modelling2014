@@ -1,0 +1,7 @@
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\bin\Debug\Launcher.exe
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\bin\Debug\Launcher.pdb
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\bin\Debug\Viewer.exe
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\bin\Debug\Viewer.pdb
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\obj\x86\Debug\Launcher.csprojResolveAssemblyReference.cache
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\obj\x86\Debug\Launcher.exe
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Launcher\obj\x86\Debug\Launcher.pdb

@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace Viewer
 {
@@ -24,9 +25,12 @@ namespace Viewer
         private static Mutex mutex                       = new Mutex(true, "{8F6F0AC4-B9A1-45fd-A8CF-72F04E6BDE8F}");
         private static string LAST_WORKING_DIR_FILE_PATH = "last_working_dir.txt";
         
-        private string            workingDir;
-        private FileSystemWatcher watcher = null;
-
+        private string              workingDir;
+        private FileSystemWatcher   watcher         = null;
+        private bool                updateRequired  = false;
+        private Timer               updateTimer     = null;
+        private DateTime            lastUpdate      = DateTime.MinValue;
+        private string              currentSMVFile  = null;
         public MainWindow()
         {
             if (!mutex.WaitOne(TimeSpan.Zero, true))
@@ -39,6 +43,65 @@ namespace Viewer
             InitializeComponent();
             LoadLastWorkingDir();
             UpdateFileWatcher();
+            SetupUpdateTimer();
+        }
+
+        private void SetupUpdateTimer()
+        {
+            int timeout = 100;
+            updateTimer = new Timer(timerCallback);
+            updateTimer.Change( 0, timeout);
+        }
+
+        // This method is called by the timer delegate.
+        public void timerCallback(Object stateInfo)
+        {
+            TimeSpan MIN_UPDATE_DELAY = new TimeSpan(0,0,0,0,500);
+            if (updateRequired)
+            {
+                updateRequired = false;
+                if ((DateTime.Now - lastUpdate) < MIN_UPDATE_DELAY )
+                    return;
+
+                this.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    txtBoxLog.Text = txtBoxLog.Text + "Update Required on "  + currentSMVFile + "\n";
+                }
+                ));
+
+                PerformUpdate();
+                
+                lastUpdate      = DateTime.Now;
+            }
+        }
+
+        private void PerformUpdate()
+        {
+            const string NuSMV_Path = @"C:\Program Files\NuSMV\2.5.4\bin\NuSMV.exe";
+            Process p = new Process();
+            // Redirect the output stream of the child process.
+            p.StartInfo.UseShellExecute         = false;
+            p.StartInfo.RedirectStandardOutput  = true;
+            p.StartInfo.FileName                = NuSMV_Path;
+            p.StartInfo.Arguments               = currentSMVFile;
+            p.Start();
+            p.WaitForExit();
+            
+            try
+            {
+                string output = p.StandardOutput.ReadToEnd();
+                this.Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    txtBoxNuSMV.Text = output;
+                }
+           ));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+           
         }
 
         private void UpdateFileWatcher()
@@ -72,6 +135,8 @@ namespace Viewer
         {
             // Specify what is done when a file is changed, created, or deleted.
             Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            currentSMVFile = e.FullPath;
+            updateRequired = true;
             this.Dispatcher.BeginInvoke((Action)(() =>
             {
                 txtBoxLog.Text = txtBoxLog.Text + "File: " + e.FullPath + " " + e.ChangeType + "\n";

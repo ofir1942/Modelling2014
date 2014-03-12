@@ -9,6 +9,7 @@
             <Button Name="btnBrowse" Content="Browse"  Margin="3" Click="btnBrowse_Click" DockPanel.Dock="Right"/>
             <TextBox Name="txtBoxSrcGenDir"  Text="src-gen dir path" TextAlignment="Left" VerticalContentAlignment="Center" DockPanel.Dock="Right"/>
         </DockPanel>
-        <TextBox Name="txtBoxLog"/>
+        <TextBox Name="txtBoxLog" DockPanel.Dock="Bottom" ScrollViewer.VerticalScrollBarVisibility="Auto" Height="100" Margin="5"/>
+        <TextBox Name="txtBoxNuSMV" DockPanel.Dock="Bottom" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
     </DockPanel>
 </Window>

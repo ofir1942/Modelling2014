@@ -1,0 +1,11 @@
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\bin\Debug\Viewer.exe
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\bin\Debug\Viewer.pdb
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\MainWindow.baml
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\MainWindow.g.cs
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\App.g.cs
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer_MarkupCompile.cache
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer.g.resources
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer.Properties.Resources.resources
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer.csproj.GenerateResource.Cache
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer.exe
+C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\CounterExampleViewer\CounterExampleViewer\Viewer\obj\x86\Debug\Viewer.pdb
