@@ -1,0 +1,14 @@
+﻿<Window x:Class="Viewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525"
+        Topmost="True" Closed="Window_Closed">
+    <DockPanel LastChildFill="True">
+        <DockPanel LastChildFill="True" DockPanel.Dock="Top"> 
+            <Label Content="src-gen path:" DockPanel.Dock="Left"/>
+            <Button Name="btnBrowse" Content="Browse"  Margin="3" Click="btnBrowse_Click" DockPanel.Dock="Right"/>
+            <TextBox Name="txtBoxSrcGenDir"  Text="src-gen dir path" TextAlignment="Left" VerticalContentAlignment="Center" DockPanel.Dock="Right"/>
+        </DockPanel>
+        <TextBox Name="txtBoxLog"/>
+    </DockPanel>
+</Window>

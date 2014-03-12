@@ -19,7 +19,7 @@ import org.xtext.osy.extendedSMV.InitAssign
 import org.xtext.osy.extendedSMV.CaseAssign
 import org.xtext.osy.extendedSMV.BooleanInit
 import org.xtext.osy.extendedSMV.StateInit
-import org.eclipse.emf.ecore.EObject
+
 import org.xtext.osy.extendedSMV.CaseCondition
 import org.xtext.osy.extendedSMV.CaseNextLiteral
 import org.xtext.osy.extendedSMV.BooleanVar
@@ -27,6 +27,7 @@ import org.xtext.osy.extendedSMV.NextAssign
 import org.xtext.osy.extendedSMV.DefaultCondition
 import org.xtext.osy.extendedSMV.SingleState
 import org.xtext.osy.extendedSMV.StateList
+import java.nio.file.Paths
 
 /**
  * Generates code from your model files on save.
@@ -38,10 +39,14 @@ class ExtendedSMVGenerator implements IGenerator {
 	@Inject extension IQualifiedNameProvider
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		for(e: resource.allContents.toIterable.filter(Module)) {
-		 	fsa.generateFile( e.fullyQualifiedName.toString("/") + ".smv",
+			var filePath = e.fullyQualifiedName.toString("/") + ".smv"
+			
+		 	fsa.generateFile( filePath,
 	      					  e.compile)
-	 	
+	 		Runtime.runtime.exec("C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/CounterExampleViewer/CounterExampleViewer/Launcher/bin/Debug/Launcher.exe ")
+	 		
 	 	}
+	 	
 //		fsa.generateFile('greetings.txt', 'People to greet: ' + 
 //			resource.allContents
 //				.filter(typeof(Greeting))
@@ -51,8 +56,8 @@ class ExtendedSMVGenerator implements IGenerator {
 	
 	def compile( Module m )
 	{
-		
-		var code = "MODULE " + m.name + "\n"
+		 
+		var code = "MODULE5 " + m.name + "\n"
 		
 		for( s: m.sections ) {
 			if( s instanceof Assignments ){

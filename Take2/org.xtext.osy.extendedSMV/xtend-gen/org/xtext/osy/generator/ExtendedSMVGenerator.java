@@ -14,6 +14,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
@@ -52,21 +53,29 @@ public class ExtendedSMVGenerator implements IGenerator {
   private IQualifiedNameProvider _iQualifiedNameProvider;
   
   public void doGenerate(final Resource resource, final IFileSystemAccess fsa) {
-    TreeIterator<EObject> _allContents = resource.getAllContents();
-    Iterable<EObject> _iterable = IteratorExtensions.<EObject>toIterable(_allContents);
-    Iterable<Module> _filter = Iterables.<Module>filter(_iterable, Module.class);
-    for (final Module e : _filter) {
-      QualifiedName _fullyQualifiedName = this._iQualifiedNameProvider.getFullyQualifiedName(e);
-      String _string = _fullyQualifiedName.toString("/");
-      String _plus = (_string + ".smv");
-      String _compile = this.compile(e);
-      fsa.generateFile(_plus, _compile);
+    try {
+      TreeIterator<EObject> _allContents = resource.getAllContents();
+      Iterable<EObject> _iterable = IteratorExtensions.<EObject>toIterable(_allContents);
+      Iterable<Module> _filter = Iterables.<Module>filter(_iterable, Module.class);
+      for (final Module e : _filter) {
+        {
+          QualifiedName _fullyQualifiedName = this._iQualifiedNameProvider.getFullyQualifiedName(e);
+          String _string = _fullyQualifiedName.toString("/");
+          String filePath = (_string + ".smv");
+          String _compile = this.compile(e);
+          fsa.generateFile(filePath, _compile);
+          Runtime _runtime = Runtime.getRuntime();
+          _runtime.exec("C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/CounterExampleViewer/CounterExampleViewer/Launcher/bin/Debug/Launcher.exe ");
+        }
+      }
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
     }
   }
   
   public String compile(final Module m) {
     String _name = m.getName();
-    String _plus = ("MODULE " + _name);
+    String _plus = ("MODULE5 " + _name);
     String code = (_plus + "\n");
     EList<Section> _sections = m.getSections();
     for (final Section s : _sections) {
