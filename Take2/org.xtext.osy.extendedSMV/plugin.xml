@@ -11,6 +11,17 @@
 	
   </extension>
 
+	<extension point="org.eclipse.ui.views">
+		<category 
+           id="org.xtext.osy.views.NusmvCounterExamples"
+           name="NuSMV Counter Examples">
+        </category>
+        <view id="org.xtext.osy.views.CounterExampleView"
+             name="Counter Example View"
+             category="org.xtext.osy.views.NusmvCounterExamples"
+          class="org.xtext.osy.views.CounterExampleView"
+          />
+	</extension>
 
 
 </plugin>
