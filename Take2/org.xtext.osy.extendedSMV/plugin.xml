@@ -10,6 +10,27 @@
        genModel = "model/generated/ExtendedSMV.genmodel" /> 
 	
   </extension>
+  
+  
+<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+    <launchConfigurationType
+        name="Shevah Applet"
+        delegate="org.xtext.osy.launch.Launch"
+        modes="run, debug"               
+        id="org.eclipse.jdt.launching.javaApplet">        
+    </launchConfigurationType>
+</extension>
+
+
+<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="icons/1.png"
+        configTypeID="org.eclipse.jdt.launching.javaApplet"
+        id="org.eclipse.jdt.debug.ui.launchConfigurationTypeImage.javaApplet">
+    </launchConfigurationTypeImage>
+</extension>
+
+
 
 	<extension point="org.eclipse.ui.views">
 		<category 

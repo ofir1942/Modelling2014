@@ -43,7 +43,7 @@ class ExtendedSMVGenerator implements IGenerator {
 			
 		 	fsa.generateFile( filePath,
 	      					  e.compile)
-	 		Runtime.runtime.exec("C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/CounterExampleViewer/CounterExampleViewer/Launcher/bin/Debug/Launcher.exe ")
+	 		//Runtime.runtime.exec("C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/CounterExampleViewer/CounterExampleViewer/Launcher/bin/Debug/Launcher.exe ")
 	 		
 	 	}
 	 	
@@ -57,8 +57,8 @@ class ExtendedSMVGenerator implements IGenerator {
 	def compile( Module m )
 	{
 		 
-		var code = "MODULE5 " + m.name + "\n"
-		
+		var code = "MODULE " + m.name + "\n"
+		//code = code + NodeModelUtils.getTokenText(NodeModelUtils.getNode(m))
 		for( s: m.sections ) {
 			if( s instanceof Assignments ){
 				code = code + CompileAssignments( s )
