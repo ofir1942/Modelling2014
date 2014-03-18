@@ -1,9 +1,11 @@
 import re
 import sys
+import os
 
-STATE_HEADER        = "-> State:" 
-LOOP_IDENTIFIER     = "-- Loop starts here"
-STATE_HEADER_REGEX  = r"re.compile('-> State\: (\d+\.\d+) <-')"
+STATE_HEADER          = "-> State:" 
+LOOP_IDENTIFIER       = "-- Loop starts here"
+STATE_HEADER_REGEX    = r"re.compile('-> State\: (\d+\.\d+) <-')"
+DOT_EXE_RELATIVE_PATH = "dotBin/dot.exe"
 
 class DOTNode(object):
     
@@ -77,12 +79,19 @@ class SMVParser(object):
         stateDOTNodes     = self.GenerateDOTNodes( statesText, loopStartStateIdx )
         dotText           = self.GenerateDOTText( stateDOTNodes )
         
-        with file( "graph.dot", 'w' ) as dotFile:
+        dotFilePath = "graph.dot"
+        with file( dotFilePath, 'w' ) as dotFile:
             dotFile.write( dotText )
+            
+        dotExePath = os.path.join( os.path.dirname( sys.argv[ 0 ] ), DOT_EXE_RELATIVE_PATH )
+        os.system( dotExePath + " %s -Tjpg -o %s" % ( dotFilePath, "graph.jpg" ))
+            
+        
 
 
 def main():
     #filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\SMVParser\out.txt"
+    
     filePath = sys.argv[1]
     with file( filePath ) as smvOutFile:
         smvOutput = smvOutFile.read()
