@@ -28,6 +28,7 @@ import org.xtext.osy.extendedSMV.DefaultCondition
 import org.xtext.osy.extendedSMV.SingleState
 import org.xtext.osy.extendedSMV.StateList
 import java.nio.file.Paths
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
 /**
  * Generates code from your model files on save.
@@ -82,44 +83,49 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 
 	def CompileAssignments( Assignments assignments) {
-		var code = "\nASSIGN\n"
-		for( singleAssignment: assignments.assignments ){
-			if( singleAssignment instanceof InitAssign ) {
-				code = code + CompileInitAssignment( singleAssignment )
-			}
-			else if( singleAssignment instanceof NextAssign ) {
-				
-				code = code + CompileNextAssignment( singleAssignment )
-			}
-			else { code = code + "weird!!"}
-		}
+		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(assignments))
+		code = code.replace( "ASSIGN", "ASSIGN\n")
+		code = code.replace( ";", ";\n")
 		
 		return code
+//		var code = "\nASSIGN\n"
+//		for( singleAssignment: assignments.assignments ){
+//			if( singleAssignment instanceof InitAssign ) {
+//				code = code + CompileInitAssignment( singleAssignment )
+//			}
+//			else if( singleAssignment instanceof NextAssign ) {
+//				
+//				code = code + CompileNextAssignment( singleAssignment )
+//			}
+//			else { code = code + "weird!!"}
+//		}
+//		
+//		return code
 	}
 
-	def CompileNextAssignment( NextAssign assignment )
-	{
-		var code = "next( " + assignment.varName.name + ") := "
-		code = code + CompileCaseAssignment( assignment.nextStatement )
-		return code
-	}
+//	def CompileNextAssignment( NextAssign assignment )
+//	{
+//		var code = "next( " + assignment.varName.name + ") := "
+//		code = code + CompileCaseAssignment( assignment.nextStatement )
+//		return code
+//	}
 	
-	def CompileCaseAssignment(CaseAssign assign) {
-		var tabPrefix = "\t\t"
-		var code = "case\n" 
-		for( caseLiteral: assign.caseLiterals ) {
-			code = code + tabPrefix + CompileCaseCondition( caseLiteral.condition ) + ' : ' + CompileCaseNextLiteral( caseLiteral.nextValue ) + ';\n'
-		}
-		
-		return code + tabPrefix + "esac;\n"
-	}
+//	def CompileCaseAssignment(CaseAssign assign) {
+//		var tabPrefix = "\t\t"
+//		var code = "case\n" 
+//		for( caseLiteral: assign.caseLiterals ) {
+//			code = code + tabPrefix + CompileCaseCondition( caseLiteral.condition ) + ' : ' + CompileCaseNextLiteral( caseLiteral.nextValue ) + ';\n'
+//		}
+//		
+//		return code + tabPrefix + "esac;\n"
+//	}
 
-	def CompileCaseNextLiteral(CaseNextLiteral literal) {
-		if( literal instanceof SingleState )
-			return SingleStateName( literal )
-		else if( literal instanceof StateList )
-			return StateListString( literal )
-	}
+//	def CompileCaseNextLiteral(CaseNextLiteral literal) {
+//		if( literal instanceof SingleState )
+//			return SingleStateName( literal )
+//		else if( literal instanceof StateList )
+//			return StateListString( literal )
+//	}
 
 	def StateListString(StateList list) {
 		var states = list.states.join( ',')	
@@ -130,28 +136,28 @@ class ExtendedSMVGenerator implements IGenerator {
 		return singleState.state
 	}
 
-	def CompileCaseCondition(CaseCondition condition) {
-		if( condition instanceof DefaultCondition )
-			return "TRUE"
-		else if( condition instanceof BooleanVar)
-			return BoolVarName( condition )
-	}
+//	def CompileCaseCondition(CaseCondition condition) {
+//		if( condition instanceof DefaultCondition )
+//			return "TRUE"
+//		else if( condition instanceof BooleanVar)
+//			return BoolVarName( condition )
+//	}
 
 	def BoolVarName(BooleanVar boolVar) {
 		return boolVar.booleanVar.name
 	}
 
-	def CompileInitAssignment(InitAssign assignment) {
-		var code = ""
-		
-		if( assignment instanceof BooleanInit ) {
-			code = code + CompileBoolInitAssignment( assignment )
-		}
-		if( assignment instanceof StateInit ) {
-			code = code + CompileStateInitAssignment( assignment )
-		}
-		return code
-	}
+//	def CompileInitAssignment(InitAssign assignment) {
+//		var code = ""
+//		
+//		if( assignment instanceof BooleanInit ) {
+//			code = code + CompileBoolInitAssignment( assignment )
+//		}
+//		if( assignment instanceof StateInit ) {
+//			code = code + CompileStateInitAssignment( assignment )
+//		}
+//		return code
+//	}
 
 	def CompileStateInitAssignment(StateInit stateInit) {
 		return "\tinit(" + stateInit.varName.name + ') := ' + stateInit.value + ";\n"
@@ -162,22 +168,28 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 	
 	def CompileVariables( VariablesSection varsSection) {
-		var code = "\nVAR\n"
-		for( v: varsSection.variables ) {
-			if( v instanceof BooleanDeclarion )
-			{
-				code = code + "\t" + v.name + ':' + "boolean ;\n"
-			}
-			else if( v instanceof StateVariableDeclaration ) {
-				code = code + CompileStateVarDeclaration( v )
-			}
-			else {
-				code = code + "Something is wrong\n"
-			}
-		}
+		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(varsSection))
+		code = code.replace( "VAR", "VAR\n")
+		code = code.replace( ";", ";\n")
 		
-		code = code + "\n"
 		return code
+//		
+//		var code = "\nVAR\n"
+//		for( v: varsSection.variables ) {
+//			if( v instanceof BooleanDeclarion )
+//			{
+//				code = code + "\t" + v.name + ':' + "boolean ;\n"
+//			}
+//			else if( v instanceof StateVariableDeclaration ) {
+//				code = code + CompileStateVarDeclaration( v )
+//			}
+//			else {
+//				code = code + "Something is wrong\n"
+//			}
+//		}
+//		
+//		code = code + "\n"
+//		return code
 	}
 	
 	def CompileStateVarDeclaration( StateVariableDeclaration stateVarDeclaration ){

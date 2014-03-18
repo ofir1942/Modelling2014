@@ -14,30 +14,23 @@ import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.nodemodel.ICompositeNode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
-import org.xtext.osy.extendedSMV.AssignmentExpression;
 import org.xtext.osy.extendedSMV.Assignments;
 import org.xtext.osy.extendedSMV.BooleanDeclarion;
 import org.xtext.osy.extendedSMV.BooleanInit;
 import org.xtext.osy.extendedSMV.BooleanVar;
-import org.xtext.osy.extendedSMV.CaseAssign;
-import org.xtext.osy.extendedSMV.CaseCondition;
-import org.xtext.osy.extendedSMV.CaseLiteral;
-import org.xtext.osy.extendedSMV.CaseNextLiteral;
-import org.xtext.osy.extendedSMV.DefaultCondition;
-import org.xtext.osy.extendedSMV.InitAssign;
 import org.xtext.osy.extendedSMV.LTLExpression;
 import org.xtext.osy.extendedSMV.LTLSpecification;
 import org.xtext.osy.extendedSMV.Module;
-import org.xtext.osy.extendedSMV.NextAssign;
 import org.xtext.osy.extendedSMV.Section;
 import org.xtext.osy.extendedSMV.SingleState;
 import org.xtext.osy.extendedSMV.StateInit;
 import org.xtext.osy.extendedSMV.StateList;
 import org.xtext.osy.extendedSMV.StateVariableDeclaration;
-import org.xtext.osy.extendedSMV.VariableDeclaration;
 import org.xtext.osy.extendedSMV.VariablesSection;
 
 /**
@@ -103,65 +96,13 @@ public class ExtendedSMVGenerator implements IGenerator {
   }
   
   public String CompileAssignments(final Assignments assignments) {
-    String code = "\nASSIGN\n";
-    EList<AssignmentExpression> _assignments = assignments.getAssignments();
-    for (final AssignmentExpression singleAssignment : _assignments) {
-      if ((singleAssignment instanceof InitAssign)) {
-        String _CompileInitAssignment = this.CompileInitAssignment(((InitAssign)singleAssignment));
-        String _plus = (code + _CompileInitAssignment);
-        code = _plus;
-      } else {
-        if ((singleAssignment instanceof NextAssign)) {
-          String _CompileNextAssignment = this.CompileNextAssignment(((NextAssign)singleAssignment));
-          String _plus_1 = (code + _CompileNextAssignment);
-          code = _plus_1;
-        } else {
-          code = (code + "weird!!");
-        }
-      }
-    }
+    ICompositeNode _node = NodeModelUtils.getNode(assignments);
+    String code = NodeModelUtils.getTokenText(_node);
+    String _replace = code.replace("ASSIGN", "ASSIGN\n");
+    code = _replace;
+    String _replace_1 = code.replace(";", ";\n");
+    code = _replace_1;
     return code;
-  }
-  
-  public String CompileNextAssignment(final NextAssign assignment) {
-    StateVariableDeclaration _varName = assignment.getVarName();
-    String _name = _varName.getName();
-    String _plus = ("next( " + _name);
-    String code = (_plus + ") := ");
-    CaseAssign _nextStatement = assignment.getNextStatement();
-    String _CompileCaseAssignment = this.CompileCaseAssignment(_nextStatement);
-    String _plus_1 = (code + _CompileCaseAssignment);
-    code = _plus_1;
-    return code;
-  }
-  
-  public String CompileCaseAssignment(final CaseAssign assign) {
-    String tabPrefix = "\t\t";
-    String code = "case\n";
-    EList<CaseLiteral> _caseLiterals = assign.getCaseLiterals();
-    for (final CaseLiteral caseLiteral : _caseLiterals) {
-      CaseCondition _condition = caseLiteral.getCondition();
-      String _CompileCaseCondition = this.CompileCaseCondition(_condition);
-      String _plus = ((code + tabPrefix) + _CompileCaseCondition);
-      String _plus_1 = (_plus + " : ");
-      CaseNextLiteral _nextValue = caseLiteral.getNextValue();
-      String _CompileCaseNextLiteral = this.CompileCaseNextLiteral(_nextValue);
-      String _plus_2 = (_plus_1 + _CompileCaseNextLiteral);
-      String _plus_3 = (_plus_2 + ";\n");
-      code = _plus_3;
-    }
-    return ((code + tabPrefix) + "esac;\n");
-  }
-  
-  public String CompileCaseNextLiteral(final CaseNextLiteral literal) {
-    if ((literal instanceof SingleState)) {
-      return this.SingleStateName(((SingleState)literal));
-    } else {
-      if ((literal instanceof StateList)) {
-        return this.StateListString(((StateList)literal));
-      }
-    }
-    return null;
   }
   
   public String StateListString(final StateList list) {
@@ -174,35 +115,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     return singleState.getState();
   }
   
-  public String CompileCaseCondition(final CaseCondition condition) {
-    if ((condition instanceof DefaultCondition)) {
-      return "TRUE";
-    } else {
-      if ((condition instanceof BooleanVar)) {
-        return this.BoolVarName(((BooleanVar)condition));
-      }
-    }
-    return null;
-  }
-  
   public String BoolVarName(final BooleanVar boolVar) {
     BooleanDeclarion _booleanVar = boolVar.getBooleanVar();
     return _booleanVar.getName();
-  }
-  
-  public String CompileInitAssignment(final InitAssign assignment) {
-    String code = "";
-    if ((assignment instanceof BooleanInit)) {
-      String _CompileBoolInitAssignment = this.CompileBoolInitAssignment(((BooleanInit)assignment));
-      String _plus = (code + _CompileBoolInitAssignment);
-      code = _plus;
-    }
-    if ((assignment instanceof StateInit)) {
-      String _CompileStateInitAssignment = this.CompileStateInitAssignment(((StateInit)assignment));
-      String _plus_1 = (code + _CompileStateInitAssignment);
-      code = _plus_1;
-    }
-    return code;
   }
   
   public String CompileStateInitAssignment(final StateInit stateInit) {
@@ -226,26 +141,12 @@ public class ExtendedSMVGenerator implements IGenerator {
   }
   
   public String CompileVariables(final VariablesSection varsSection) {
-    String code = "\nVAR\n";
-    EList<VariableDeclaration> _variables = varsSection.getVariables();
-    for (final VariableDeclaration v : _variables) {
-      if ((v instanceof BooleanDeclarion)) {
-        String _name = ((BooleanDeclarion)v).getName();
-        String _plus = ((code + "\t") + _name);
-        String _plus_1 = (_plus + ":");
-        String _plus_2 = (_plus_1 + "boolean ;\n");
-        code = _plus_2;
-      } else {
-        if ((v instanceof StateVariableDeclaration)) {
-          String _CompileStateVarDeclaration = this.CompileStateVarDeclaration(((StateVariableDeclaration)v));
-          String _plus_3 = (code + _CompileStateVarDeclaration);
-          code = _plus_3;
-        } else {
-          code = (code + "Something is wrong\n");
-        }
-      }
-    }
-    code = (code + "\n");
+    ICompositeNode _node = NodeModelUtils.getNode(varsSection);
+    String code = NodeModelUtils.getTokenText(_node);
+    String _replace = code.replace("VAR", "VAR\n");
+    code = _replace;
+    String _replace_1 = code.replace(";", ";\n");
+    code = _replace_1;
     return code;
   }
   
