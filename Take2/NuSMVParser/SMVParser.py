@@ -63,8 +63,8 @@ class SMVParser(object):
         
         return dotNodes
     
-    def GenerateDOTText(self, stateDOTNodes ):
-        dotText = "digraph G  { rankdir=LR \n"
+    def GenerateDOTText(self, stateDOTNodes, LTLSpec ):
+        dotText = 'digraph G  { rankdir=LR label="%s" \n' % LTLSpec
         for stateNode in stateDOTNodes:
             dotText += stateNode.stateDOTText + "\n"
             
@@ -76,16 +76,27 @@ class SMVParser(object):
         
         return dotText
     
+
+    def ExtractLTLSpec(self, specification):
+        specification = SPECIFICATION_HEADER + specification
+        specMatch     = re.compile( r'-- specification (.+) is false' ).match( specification )
+        LTLSpec       = specMatch.groups()[0]
+        
+        return LTLSpec
+
+    
     def ParseCounterExamples(self):
         specsText      = self.smvOutput.split( SPECIFICATION_HEADER )
         specsText      = specsText[ 1: ]
         
         idx = 0
         for specification in specsText:
+            LTLSpec = self.ExtractLTLSpec( specification )
+           
             statesText        = self.GetStatesText( specification )
             loopStartStateIdx = self.FindLoopStart( statesText )
             stateDOTNodes     = self.GenerateDOTNodes( statesText, loopStartStateIdx )
-            dotText           = self.GenerateDOTText( stateDOTNodes )
+            dotText           = self.GenerateDOTText( stateDOTNodes, LTLSpec )
             
             idx           += 1
             dotFilePath    = "graph%d.dot" % ++idx
