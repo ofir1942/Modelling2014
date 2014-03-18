@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.xtext.osy.views.CounterExampleView;
 import org.xtext.osy.views.SpecList;
@@ -80,8 +81,17 @@ public class Launch implements ILaunchConfigurationDelegate{
 		Display.getDefault().asyncExec(new Runnable() {
 		    @Override
 		    public void run() {
+		    	
+		    	try {
+		    		//This will show (if its not already shown) our counter example view.
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.xtext.osy.views.CounterExampleView");
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
 		        CounterExampleView counterExView = (CounterExampleView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.xtext.osy.views.CounterExampleView");
-		        counterExView.addTask();
+		        
+		        counterExView.clearSpecs(); // first clear all the specs
+		        counterExView.addSpec();
 		    }
 		});
 

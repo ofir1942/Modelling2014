@@ -68,12 +68,12 @@ public class CounterExampleView extends ViewPart {
 		// Normally we might do other stuff here.
 	}
 	
-	public void addTask(){
+	public void addSpec(){
 		specList.addSpec();
 	}
 
 	public void clearSpecs(){
-		
+		specList.clearSpecs();
 	}
 
 	public void setFocus() {
@@ -102,8 +102,6 @@ public class CounterExampleView extends ViewPart {
 		int style = SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | 
 					SWT.FULL_SELECTION | SWT.HIDE_SELECTION;
 
-		final int NUMBER_COLUMNS = 2;
-
 		table = new Table(parent, style);
 		
 		GridData gridData = new GridData(GridData.FILL_BOTH);
@@ -114,7 +112,6 @@ public class CounterExampleView extends ViewPart {
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 
-		// 1st column with image/checkboxes - NOTE: The SWT.CENTER has no effect!!
 		TableColumn column = new TableColumn(table, SWT.CENTER, 0);		
 		column.setText("LTLSPEC Name");
 		column.setWidth(100);

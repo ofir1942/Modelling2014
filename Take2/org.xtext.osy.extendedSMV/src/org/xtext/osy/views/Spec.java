@@ -6,6 +6,9 @@ public class Spec {
 	private String description 	= "";
 	private String owner 		= "?";
 	private int percentComplete = 0;  
+	
+	private String spec;
+	private String imagePath;
 
 	/**
 	 * Create a task with an initial description

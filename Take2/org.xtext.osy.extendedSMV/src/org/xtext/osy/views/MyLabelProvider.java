@@ -12,16 +12,14 @@ import org.eclipse.swt.graphics.Image;
  * 
  * @see org.eclipse.jface.viewers.LabelProvider 
  */
-public class MyLabelProvider 
-	extends LabelProvider
-	implements ITableLabelProvider {
+public class MyLabelProvider extends LabelProvider implements ITableLabelProvider {
 
 	
 	/**
 	 * Returns the image with the given key, or <code>null</code> if not found.
 	 */
 	private Image getImage(boolean isSelected) {
-		return  new Image(null, "C:\\aaa.jpg");
+		return null;// new Image(null, "C:\\aaa.jpg");
 	}
 
 	/**
@@ -31,7 +29,8 @@ public class MyLabelProvider
 		String result = "";
 		Spec task = (Spec) element;
 		switch (columnIndex) {
-			case 0:  // COMPLETED_COLUMN
+			case 0:
+				result = task.getOwner();
 				break;
 			case 1 :
 				result = task.getDescription();
