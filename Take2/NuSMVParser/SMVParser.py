@@ -63,8 +63,11 @@ class SMVParser(object):
         
         return dotNodes
     
-    def GenerateDOTText(self, stateDOTNodes, LTLSpec ):
-        dotText = 'digraph G  { rankdir=LR label="%s" \n' % LTLSpec
+    def GenerateDOTText(self, stateDOTNodes, LTLSpec, LTLResult ):
+        if LTLResult is True:
+            dotText = 'digraph G  { rankdir=LR label="SPECIFICATION %s ==> is TRUE"\n' % LTLSpec
+        else:
+            dotText = 'digraph G  { rankdir=LR label="SPECIFICATION %s ==> is FALSE"\n' % LTLSpec
         for stateNode in stateDOTNodes:
             dotText += stateNode.stateDOTText + "\n"
             
@@ -79,11 +82,14 @@ class SMVParser(object):
 
     def ExtractLTLSpec(self, specification):
         specification = SPECIFICATION_HEADER + specification
-        specMatch     = re.compile( r'-- specification (.+) is false' ).match( specification )
+        specMatch     = re.compile( r'-- specification (.+) is (.+)' ).match( specification )
         LTLSpec       = specMatch.groups()[0]
-        
-        return LTLSpec
+        result        = ( specMatch.groups()[1] == 'true' )
+        return LTLSpec, result
 
+    
+
+    
     
     def ParseCounterExamples(self):
         specsText      = self.smvOutput.split( SPECIFICATION_HEADER )
@@ -91,14 +97,17 @@ class SMVParser(object):
         
         idx = 0
         for specification in specsText:
-            LTLSpec = self.ExtractLTLSpec( specification )
-           
-            statesText        = self.GetStatesText( specification )
-            loopStartStateIdx = self.FindLoopStart( statesText )
-            stateDOTNodes     = self.GenerateDOTNodes( statesText, loopStartStateIdx )
-            dotText           = self.GenerateDOTText( stateDOTNodes, LTLSpec )
+            idx            += 1
+            LTLSpec, LTLResult = self.ExtractLTLSpec( specification )
             
-            idx           += 1
+            stateDOTNodes = []
+            if LTLResult is False:
+                statesText        = self.GetStatesText( specification )
+                loopStartStateIdx = self.FindLoopStart( statesText )
+                stateDOTNodes     = self.GenerateDOTNodes( statesText, loopStartStateIdx )
+                
+            dotText           = self.GenerateDOTText( stateDOTNodes, LTLSpec, LTLResult )
+            
             dotFilePath    = "graph%d.dot" % ++idx
             graphImagePath = "graph%d.jpg" % idx
             with file( dotFilePath, 'w' ) as dotFile:
