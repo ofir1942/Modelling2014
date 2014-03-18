@@ -17,6 +17,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.xtext.osy.views.CounterExampleView;
+import org.xtext.osy.views.SpecList;
 
 public class Launch implements ILaunchConfigurationDelegate{
 
@@ -69,6 +76,14 @@ public class Launch implements ILaunchConfigurationDelegate{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		Display.getDefault().asyncExec(new Runnable() {
+		    @Override
+		    public void run() {
+		        CounterExampleView counterExView = (CounterExampleView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.xtext.osy.views.CounterExampleView");
+		        counterExView.addTask();
+		    }
+		});
 
 		/*try {
 			String command = "cmd /c start cmd.exe /k nusmv.exe \"C:\\runtime-EclipseApplication\\Ofir\\src-gen\\main.smv\"";

@@ -24,7 +24,7 @@
 
 <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     <launchConfigurationTypeImage
-        icon="icons/1.png"
+        icon="icons/nusmv.gif"
         configTypeID="org.eclipse.jdt.launching.javaApplet"
         id="org.eclipse.jdt.debug.ui.launchConfigurationTypeImage.javaApplet">
     </launchConfigurationTypeImage>
