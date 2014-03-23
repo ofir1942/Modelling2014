@@ -7,6 +7,7 @@ STATE_HEADER          = "-> State:"
 LOOP_IDENTIFIER       = "-- Loop starts here"
 STATE_HEADER_REGEX    = r"re.compile('-> State\: (\d+\.\d+) <-')"
 DOT_EXE_RELATIVE_PATH = "dotBin/dot.exe"
+NUSMV_EXERELATIVE_PATH= "NuSMV_bin/NuSMV.exe"
 
 class DOTNode(object):
     
@@ -115,17 +116,24 @@ class SMVParser(object):
                 
             dotExePath = os.path.join( os.path.dirname( sys.argv[ 0 ] ), DOT_EXE_RELATIVE_PATH )
             os.system( dotExePath + " %s -Tjpg -o %s" % ( dotFilePath, graphImagePath ))
-            
-        
+            print( os.path.abspath( graphImagePath ) )
 
+
+def RunNuSMV( smvFilePath ):
+    nuSMVExePath =  os.path.join( os.path.dirname( sys.argv[ 0 ] ), NUSMV_EXERELATIVE_PATH )
+    nuSMVOutFile = "nusmv_out.txt"
+    os.system( nuSMVExePath + " %s > %s" % ( smvFilePath, nuSMVOutFile ))
+    
+    with file( nuSMVOutFile ) as smvOutFile:
+        smvOutput = smvOutFile.read()
+        
+    return smvOutput
 
 def main():
-    filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\out.txt"
+    #filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\out.txt"
     
-    #filePath = sys.argv[1]
-    with file( filePath ) as smvOutFile:
-        smvOutput = smvOutFile.read()
-    
+    smvFilePath = sys.argv[1]
+    smvOutput = RunNuSMV( smvFilePath )
     smvParser = SMVParser( smvOutput )
     smvParser.ParseCounterExamples()
     
