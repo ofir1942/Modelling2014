@@ -2,15 +2,16 @@ package org.xtext.osy.launch;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Writer;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.*;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,30 +19,32 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.xtext.osy.views.CounterExampleView;
-import org.xtext.osy.views.SpecList;
+
 
 public class Launch implements ILaunchConfigurationDelegate{
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		//get object which represents the workspace  
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();  
-
-		//get location of workspace (java.io.File)  
-		File workspaceDirectory = workspace.getRoot().getLocation().toFile();
-
-
-		try {
-			Process p = new ProcessBuilder("nusmv.exe","C:\\runtime-EclipseApplication\\Ofir\\src-gen\\main.smv").start();	
+		//get object which represents the workspace  			  
+		String workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
+		String projectName = configuration.getAttribute("org.eclipse.jdt.launching.PROJECT_ATTR", "");
+		FileFinder finder = new FileFinder();
+		Path startPath = Paths.get(workspaceLocation+"\\"+projectName);
+        try {
+			Files.walkFileTree(startPath, finder);
+		} catch (IOException e) {
+			System.err.println("Failed to walk file tree: "+startPath.toString());
+			e.printStackTrace();
+		} 
+		String smvFilePath = finder.getPath();
+        try {
+			Process p = new ProcessBuilder("nusmv.exe",smvFilePath).start();	
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\aaa.smv"));
+			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\out.txt"));
 			String line;
 			while ((line = in.readLine()) != null) {
 			    out.write(line+'\n');
@@ -53,9 +56,8 @@ public class Launch implements ILaunchConfigurationDelegate{
 			e1.printStackTrace();
 		}
 		
-		//C:\Users\DELL\git\Modelling2014OfirVersion\Take2\NuSMVParser\SMVParser.py
 		try {
-			Process p = new ProcessBuilder("python.exe", "F:\\SMVParser.py", "f:\\aaa.smv").start();
+			Process p = new ProcessBuilder("python.exe", "F:\\SMVParser.py", smvFilePath).start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,7 +65,7 @@ public class Launch implements ILaunchConfigurationDelegate{
 		
 		//dot.exe filename -Tjpg -o f:\aa.jpg
 		
-		try {
+		/*try {
 			Process p = new ProcessBuilder("dot.exe", "F:\\graph.dot","-o","F:\\aab.jpg","-Tjpg").start();
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\zzz.txt"));
@@ -76,12 +78,11 @@ public class Launch implements ILaunchConfigurationDelegate{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		Display.getDefault().asyncExec(new Runnable() {
 		    @Override
-		    public void run() {
-		    	
+		    public void run() {		    	
 		    	try {
 		    		//This will show (if its not already shown) our counter example view.
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.xtext.osy.views.CounterExampleView");
@@ -89,7 +90,6 @@ public class Launch implements ILaunchConfigurationDelegate{
 					e.printStackTrace();
 				}
 		        CounterExampleView counterExView = (CounterExampleView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.xtext.osy.views.CounterExampleView");
-		        
 		        counterExView.clearSpecs(); // first clear all the specs
 		        counterExView.addSpec();
 		    }
@@ -125,5 +125,24 @@ public class Launch implements ILaunchConfigurationDelegate{
 		}*/
 	}
 
+	private static class FileFinder extends SimpleFileVisitor<Path>{ 
+	    
+		private String path = null;
+		
+		public String getPath(){
+			return path;
+		}
+		
+		@Override
+	    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+	        throws IOException {
+	        if(file.toString().endsWith(".smv")){
+	        	path = file.toString();
+	        	return FileVisitResult.TERMINATE;
+	        }
+	        return FileVisitResult.CONTINUE;
+	    }
+	}
 
 }
+
