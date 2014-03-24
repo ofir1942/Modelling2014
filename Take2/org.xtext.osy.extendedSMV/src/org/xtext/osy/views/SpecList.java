@@ -15,9 +15,6 @@ public class SpecList {
 
 	private Vector<Spec> specs = new Vector<Spec>();
 	private Set<ISpecListViewer> changeListeners = new HashSet<ISpecListViewer>();
-
-	// Combo box choices
-	static final String[] OWNERS_ARRAY = { "?", "Nancy", "Larry", "Joe" };
 	
 	/**
 	 * Constructor
@@ -33,21 +30,13 @@ public class SpecList {
 	 * collection of tasks
 	 */
 	private void initData() {
-		Spec task;
+		/*Spec task;
 		for (int i = 0; i < 10; i++) {
 			task = new Spec("Task "  + i);
-			task.setOwner(OWNERS_ARRAY[i % 3]);
+			
 			specs.add(task);
-		}
+		}*/
 	};
-
-	/**
-	 * Return the array of owners   
-	 */
-	public String[] getOwners() {
-		return OWNERS_ARRAY;
-	}
-	
 	/**
 	 * Return the collection of tasks
 	 */
@@ -67,8 +56,8 @@ public class SpecList {
 	/**
 	 * Add a new task to the collection of tasks
 	 */
-	public void addSpec() {
-		Spec task = new Spec("New spec");
+	public void addSpec(String spec) {
+		Spec task = new Spec(spec);
 		specs.add(specs.size(), task);
 		Iterator<ISpecListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())

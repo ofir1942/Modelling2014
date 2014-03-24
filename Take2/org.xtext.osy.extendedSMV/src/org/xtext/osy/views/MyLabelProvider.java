@@ -18,27 +18,15 @@ public class MyLabelProvider extends LabelProvider implements ITableLabelProvide
 	/**
 	 * Returns the image with the given key, or <code>null</code> if not found.
 	 */
-	private Image getImage(boolean isSelected) {
-		return null;// new Image(null, "C:\\aaa.jpg");
+	private Image getImage(Image image) {
+		return image;// new Image(null, "C:\\aaa.jpg");
 	}
 
 	/**
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(Object element, int columnIndex) {
-		String result = "";
-		Spec task = (Spec) element;
-		switch (columnIndex) {
-			case 0:
-				result = task.getOwner();
-				break;
-			case 1 :
-				result = task.getDescription();
-				break;
-			default :
-				break; 	
-		}
-		return result;
+		return "";
 	}
 
 	/**
@@ -46,7 +34,7 @@ public class MyLabelProvider extends LabelProvider implements ITableLabelProvide
 	 */
 	public Image getColumnImage(Object element, int columnIndex) {
 		return (columnIndex == 0) ?   // COMPLETED_COLUMN?
-			getImage(((Spec) element).isCompleted()) :
+			getImage(((Spec) element).getImage()) :
 			null;
 	}
 

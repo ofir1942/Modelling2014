@@ -1,5 +1,7 @@
 package org.xtext.osy.views;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -20,12 +22,10 @@ public class CounterExampleView extends ViewPart {
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String ID = "org.xtext.osy.views.CounterExampleView";
-	private final String SPEC_COLUMN 	= "SPEC Name";
 	private final String IMAGE_COLUMN 	= "Image";
 
 	// Set column names
 	private String[] columnNames = new String[] { 
-			SPEC_COLUMN, 
 			IMAGE_COLUMN
 			};
 	
@@ -68,8 +68,14 @@ public class CounterExampleView extends ViewPart {
 		// Normally we might do other stuff here.
 	}
 	
-	public void addSpec(){
-		specList.addSpec();
+	public void addSpec(String spec){
+		specList.addSpec(spec);
+	}
+	
+	public void addSpecs(ArrayList<String> specs){
+		for(String spec: specs){
+			specList.addSpec(spec);
+		}
 	}
 
 	public void clearSpecs(){
@@ -113,13 +119,13 @@ public class CounterExampleView extends ViewPart {
 		table.setHeaderVisible(true);
 
 		TableColumn column = new TableColumn(table, SWT.CENTER, 0);		
-		column.setText("LTLSPEC Name");
-		column.setWidth(100);
+		column.setText("SPEC Image");
+		column.setWidth(2000);
 		
 		// 2nd column with task Description
-		column = new TableColumn(table, SWT.LEFT, 1);
+		/*column = new TableColumn(table, SWT.LEFT, 1);
 		column.setText("Image");
-		column.setWidth(400);
+		column.setWidth(400);*/
 
 	}
 	

@@ -1,8 +1,6 @@
 package org.xtext.osy.launch;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.FileVisitResult;
@@ -11,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.*;
+import java.util.ArrayList;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -41,7 +40,7 @@ public class Launch implements ILaunchConfigurationDelegate{
 			e.printStackTrace();
 		} 
 		String smvFilePath = finder.getPath();
-        try {
+        /*try {
 			Process p = new ProcessBuilder("nusmv.exe",smvFilePath).start();	
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\out.txt"));
@@ -54,10 +53,17 @@ public class Launch implements ILaunchConfigurationDelegate{
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
-		
+		}*/
+		System.out.println("smv path: "+smvFilePath);
+		final ArrayList<String> specs = new ArrayList<String>();
 		try {
-			Process p = new ProcessBuilder("python.exe", "F:\\SMVParser.py", smvFilePath).start();
+			Process p = new ProcessBuilder("python.exe", "C:\\Users\\DELL\\git\\Modelling2014OfirVersion\\Take2\\NuSMVParser\\SMVParser.py", smvFilePath).start();
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line;
+			while ((line = in.readLine()) != null) {
+			    specs.add(line);
+			}
+			in.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -91,7 +97,7 @@ public class Launch implements ILaunchConfigurationDelegate{
 				}
 		        CounterExampleView counterExView = (CounterExampleView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.xtext.osy.views.CounterExampleView");
 		        counterExView.clearSpecs(); // first clear all the specs
-		        counterExView.addSpec();
+		        counterExView.addSpecs(specs);
 		    }
 		});
 
