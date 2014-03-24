@@ -6,8 +6,8 @@ SPECIFICATION_HEADER  = "-- specification"
 STATE_HEADER          = "-> State:" 
 LOOP_IDENTIFIER       = "-- Loop starts here"
 STATE_HEADER_REGEX    = r"re.compile('-> State\: (\d+\.\d+) <-')"
-DOT_EXE_RELATIVE_PATH = "dotBin/dot.exe"
-NUSMV_EXERELATIVE_PATH= "NuSMV_bin/NuSMV.exe"
+DOT_EXE_RELATIVE_PATH = "dotBin\\dot.exe"
+NUSMV_EXERELATIVE_PATH= "NuSMV_bin\\NuSMV.exe"
 
 class DOTNode(object):
     
@@ -131,7 +131,7 @@ def RunNuSMV( smvFilePath ):
 
 def main():
     #filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\out.txt"
-    
+	
     smvFilePath = sys.argv[1]
     smvOutput = RunNuSMV( smvFilePath )
     smvParser = SMVParser( smvOutput )
