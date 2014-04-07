@@ -12,55 +12,85 @@ Module:
 	'MODULE' name=IDENTIFIER
 	// @YE: the params' expression is included in parentheses with question mark,
 	// because parameter list may be empty like in this example: Module A()  
-	('(' ((params += IDENTIFIER) (',' params += IDENTIFIER)*)? ')')?
+	('(' ((params += Parameter) (',' params += Parameter)*)? ')')?
 	(sections += Section)*
 ;
 
+Parameter:
+	name = IDENTIFIER
+;
+
 Section:
-	VariablesSection //| Assignments | Transactions | LTLSpecification //| Comments
+	VariableDeclaration | Assignments | Transactions | DefineDeclaration | Constraints
+	| LTLSpecification | CTLSpecification //| Comments
 ;
 
-InitConstraint:
-	'INIT' SimpleExpression ';'?
+VariableDeclaration:
+  {VariableDeclaration}
+  'VAR' (variables+=DeclaredVariable)*
 ;
 
-InVarConstraint:
-	'INVAR' SimpleExpression ';'?
+DeclaredVariable returns Variable:
+  name=IDENTIFIER ':' type=Type semicolon?=';'?
 ;
 
-//CTLSpecification:
-//	'SPEC' CTLExpression
+Type: 
+  SimpleTypeSpecifier
+  | ModuleTypeSpecifier 
+;
+
+SimpleTypeSpecifier:
+	{BooleanType} 'boolean'
+	| {WordType} ('word' '[' wordINT=INT ']') 
+	| {UnsignedWordType} ('unsigned' 'word' '[' uWordINT=INT ']')
+	| {SignedWordType} ('signed word' '[' signedINT=INT ']')
+	| {EnumType} '{' literals+=EmunLiteral (',' literals+=EmunLiteral)* '}'
+	| {IntervalType} lower=INT '..' upper=INT
+	| {ArrayType} 'array' lower=INT '..' upper=INT 'of' type=SimpleTypeSpecifier
+;
+
+ModuleTypeSpecifier:
+  {SyncrProcessType} module=[Module|IDENTIFIER] ("(" params+=SimpleExpression ("," params+=SimpleExpression)* ")")?
+  | {AsyncrProcessType} "process" module=[Module|IDENTIFIER] ("(" params+=SimpleExpression ("," params+=SimpleExpression)* ")")?
+;
+
+EmunLiteral:
+	EnumVariable
+	| IntegerConstant
+	| BooleanConstant
+;
+
+EnumVariable:  
+  name=IDENTIFIER
+;
+
+IntegerConstant returns Expression:
+  {IntegerConstant} constant=INT
+;
+
+DefineDeclaration:
+  {DefineDeclaration}
+  'DEFINE' (definitions+=Definition)*
+;
+
+Constraints:  
+  feature=BasicOpConstraints expression=SimpleExpression semicolon?=';'?
+;
+
+BasicOpConstraints:
+  'INIT'|'INVAR'|'TRANS'|'FAIRNESS'|'JUSTICE';
+
+
+ 
+
+//InitConstraint:
+//	'INIT' SimpleExpression ';'?
+//;
+//
+//InVarConstraint:
+//	'INVAR' SimpleExpression ';'?
 //;
 
-//CTLExpression:
-//	SimpleExpression | '(' CTLExpression ')' | '!' CTLExpression | 
-//	CTLExpression '&' CTLExpression | CTLExpression '|' CTLExpression |
-//	CTLExpression 'xor' CTLExpression | CTLExpression 'xnor' CTLExpression |
-//	CTLExpression '->' CTLExpression | CTLExpression '<->' CTLExpression |
-//	'EG' CTLExpression | 'EX' CTLExpression | 'EF' CTLExpression |
-//	'AG' CTLExpression | 'AX' CTLExpression | 'AF' CTLExpression |
-//	'E' '[' CTLExpression 'U' CTLExpression ']' | 
-//	'E' '[' CTLExpression 'U' CTLExpression ']'
-//;
-
-LTLSpecification:
-	'LTLSPEC' LTLExpression ';'?
-;
-
-LTLExpression: 
-	'G' IDENTIFIER
-;
-
-//LTLExpression:
-//	SimpleExpression | '(' LTLExpression ')' | '!' LTLExpression | 
-//	LTLExpression '&' LTLExpression | LTLExpression '|' LTLExpression |
-//	LTLExpression 'xor' LTLExpression | LTLExpression 'xnor' LTLExpression |
-//	LTLExpression '->' LTLExpression | LTLExpression '<->' LTLExpression |
-//	'X' LTLExpression | 'G' LTLExpression | 'F' LTLExpression |
-//	LTLExpression 'U' LTLExpression | LTLExpression 'V' LTLExpression | 
-//	'Y' LTLExpression | 'Z' LTLExpression | 'H' LTLExpression | 'O' LTLExpression |
-//	LTLExpression 'S' LTLExpression | LTLExpression 'T' LTLExpression
-//;
 
 //InVarSpecification:
 //	'INVARSPEC' SimpleExpression ';'
@@ -143,27 +173,28 @@ SimpleExpression returns Expression: //TODO: Note that simple expressions cannot
 SetBodyExpression returns Expression:
   {SetBodyExpression}
   '{' expressions+=SimpleExpression (',' expressions+=SimpleExpression)* '}'
+  //'{' expressions+=IDENTIFIER (',' expressions+=IDENTIFIER)* '}'
 ;
 
-Constant:
-	BooleanConstant | IntegerConstant | SymbolicConstant | WordConstant | RangeConstant   
-;
+//Constant:
+//	BooleanConstant | IntegerConstant | SymbolicConstant | WordConstant | RangeConstant   
+//;
 
 //BooleanConstant: 
 //	BOOL
 //;
 
-IntegerConstant: 
-	IntegerNumber
-;
+//IntegerConstant: 
+//	IntegerNumber
+//;
 
 SymbolicConstant:
 	IDENTIFIER
 ;
 
-WordConstant:
-	'0' WordSignSpecifier? WordBase WordWidth? '_' WordValue
-;
+//WordConstant:
+//	'0' WordSignSpecifier? WordBase WordWidth? '_' WordValue
+//;
 
 WordSignSpecifier:
 	'u' | 's'
@@ -177,19 +208,19 @@ WordWidth:
 	IntegerNumber //TODO: must be possitive - check that this if possitive with a validator rule
 ;
 
-WordValue:
-	HexDigit | WordValueTAG 
-;
+//WordValue:
+//	HexDigit | WordValueTAG 
+//;
+//
+//WordValueTAG:
+//	HexDigit WordValue
+//;
 
-WordValueTAG:
-	HexDigit WordValue
-;
-
-HexDigit:
-	'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
-	'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' |
-	'E' | 'F' 
-;
+//HexDigit:
+//	'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
+//	'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' |
+//	'E' | 'F' 
+//;
 
 RangeConstant:
 	IntegerNumber '..' IntegerNumber
@@ -199,9 +230,9 @@ IntegerNumber:
 	INT // TODO: this is not exactly an int - CHECK THIS PLEASE
 ;
 
- terminal fragment DIGIT:
-	('0'..'9')
-;
+// DIGIT: 
+//	('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9')
+//;
 
 DefineIdentifier:
 	ComplexIdentifier
@@ -211,18 +242,18 @@ VariableIdentifier returns Expression:
 	ComplexIdentifier
 ;
 
-ComplexIdentifier returns Expression:
-	('self' | IDENTIFIER) ComplexIdentifierTag?
-	//IDENTIFIER | ComplexIdentifier '.' IDENTIFIER // | ComplexIdentifier '[' SimpleExpression ']' | 'self'
-	;
-
-ComplexIdentifierTag returns Expression:
-	('.'IDENTIFIER) ComplexIdentifierTag? | '[' SimpleExpression ']'
-;
+//ComplexIdentifier returns Expression:
+//	('self' | IDENTIFIER) ComplexIdentifierTag?
+//	//IDENTIFIER | ComplexIdentifier '.' IDENTIFIER // | ComplexIdentifier '[' SimpleExpression ']' | 'self'
+//	;
+//
+//ComplexIdentifierTag returns Expression:
+//	('.'IDENTIFIER) ComplexIdentifierTag? | '[' SimpleExpression ']'
+//;
 
 terminal IDENTIFIER:
 	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
-	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
+	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9' | '$' | '#' | '-')* 
 ;
 
 //terminal IDENTIFIER_FIRST_CHARACTER:
@@ -247,11 +278,11 @@ CaseExpr:
 //;
 
 
-Comment: 
-	comment = SMV_COMMENT
-;
+//Comment: 
+//	comment = SMV_COMMENT
+//;
 
-terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
+
 // terminal AND_OR : '&' | '|' ;
 
 VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
@@ -280,7 +311,7 @@ TransactionPrecondition:
 ;
 
 PreconditionStatement:
-	IntegerPrecondition | BooleanPrecondition | StatePrecondition  | Comment
+	IntegerPrecondition | BooleanPrecondition | StatePrecondition
 ;
 
 StatePrecondition:
@@ -322,10 +353,6 @@ IntegerPostTransaction:
 
 ConditionalPostTRansaction:
 	name = IDENTIFIER
-;
-	
-VariableDeclaration:
-	IntegerDeclarion | BooleanDeclarion | StateVariableDeclaration | Comment
 ;
 
 IntegerDeclarion:
@@ -370,11 +397,13 @@ SimpleAssign:
 ;
 
 InitAssign:
-  'init' '(' id=ComplexIdentifier ')' ':=' expression=SimpleExpression semicolon?=';'?
+  'init' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)*  ')' ':=' expression=SimpleExpression semicolon?=';'?
 ;
 
+
+
 NextAssign:
-  'next' '(' id=ComplexIdentifier ')' ':=' expression=NextExpression semicolon?=';'?
+  'next' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)* ')' ':=' expression=NextExpression semicolon?=';'?
 ;
 
 NextExpression returns Expression:
@@ -518,10 +547,29 @@ BasicExclamationOpUnary:
 //	INT ',' INT
 //;
 
-
 UnaryExpression returns Expression:
-	Case | VariableIdentifier | BooleanConstant | SetBodyExpression
+	SimpleExpressionParenthesis | Case | BooleanConstant | SetBodyExpression | EnumIdentifier
+	| Next | {Keywords} ('self' | 'running') 
 ;
+
+Next returns Expression:
+  {Next}
+  'next' '(' expression=SimpleExpression ')'
+;  
+
+SimpleExpressionParenthesis returns Expression:
+  '(' Implies {SimpleExpressionParenthesis.expression=current} ')'
+;
+
+
+EnumIdentifier:
+	name += GeneralIdentifier ('.' name += GeneralIdentifier)*
+;
+
+GeneralIdentifier:
+	INT | IDENTIFIER 
+;
+
 
 BooleanConstant returns Expression: 
   {BooleanConstant} 
@@ -539,3 +587,168 @@ CaseBody returns Expression:
   {CaseBody}
   case = SimpleExpression ':' assigment=SimpleExpression ';'
 ;
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+//SPECS
+//////////////////////////////////////////////////////////////////////////////////
+
+
+LTLSpecification:
+	'LTLSPEC' expression=LTLExpression ';'?
+;
+
+CTLSpecification:
+	'CTLSPEC' CTLExpression ';'?
+;
+
+CTLExpression returns Expression:
+	SpecImplies
+;
+
+LTLExpression returns Expression: 
+	SpecImplies
+;
+
+SpecImplies returns Expression:
+  SpecEquivalence ({BinaryExpression.left=current} feature=OpImplies right=SpecEquivalence)*
+;
+  
+SpecEquivalence returns Expression:
+  SpecOr ({BinaryExpression.left=current} feature=OpEquivalence right=SpecOr)*
+;  
+  
+SpecOr returns Expression:
+  SpecAnd ({BinaryExpression.left=current} feature=OpOr right=SpecAnd)*
+;
+
+
+SpecAnd returns Expression:
+  Triggered ({BinaryExpression.left=current} feature=OpAnd right=Triggered)*;
+  
+  // LTL
+Triggered returns Expression:
+  Since ({BinaryExpression.left=current} feature=OpTriggered right=Since)*;
+  
+OpTriggered:
+  'T';
+
+// LTL
+Since returns Expression:
+  Releases ({BinaryExpression.left=current} feature=OpSince right=Releases)*;
+  
+OpSince:
+  'S';
+
+// LTL
+Releases returns Expression:
+  Until ({BinaryExpression.left=current} feature=OpReleases right=Until)*;
+
+OpReleases:
+  'V';
+
+// LTL
+Until returns Expression:
+  SpecUnaryExpression ({BinaryExpression.left=current} feature=OpUntil right=SpecUnaryExpression)*;
+  
+OpUntil:
+  'U';
+  
+SpecUnaryExpression returns Expression:
+	ExistsUntil | ForallUntil | 
+	{UnaryExpression} feature=OpSpecUnaryExpression expression=SpecUnaryExpression |
+	Primary 
+;
+
+OpSpecUnaryExpression:
+	'!' // Shared by Basic, LTL, CTL
+	|'X'|'G'|'F'|'Y'|'Z'|'H'|'O' // LTL
+	|'EG'|'EX'|'EF'|'AG'|'AX'|'AF' // CTL  	
+;
+
+//// CTL
+// TODO thats to hacky, because we normally expect an Until expression, not a SimpleExpression  
+ExistsUntil returns Expression:
+  {ExistsUntil}
+  'E' '[' expression=SimpleExpression ']';
+    
+//// CTL
+// TODO thats to hacky, because we normally expect an Until expression, not a SimpleExpression
+ForallUntil returns Expression:
+  {ForallUntil}
+  'A' '[' expression=SimpleExpression ']';
+
+  
+  
+Primary returns Expression:
+  Parenthesis
+  | EnumAssignment
+  | EnumIdentifier
+  //| CaseType
+  //| IntervallExpression
+  //| ComplexIdentifier  // VariableIdentifier + DefineIdentifier
+  //| BooleanConstant
+  //| IntegerConstant  
+  //| WordConstant  
+;
+
+EnumAssignment:
+	var += IDENTIFIER ('.' var+= IDENTIFIER)* '=' var2 = (IDENTIFIER | BOOL)
+;
+
+//CaseType:
+//	var=[Type]
+//;
+
+Parenthesis returns Expression:
+  '(' SpecImplies {Parenthesis.expression=current} ')'
+;
+
+IntervallExpression returns Expression:
+  {IntervallExpression}
+  lower=INT '..' upper=INT
+;
+
+
+ComplexIdentifier returns Expression:
+  ComplexIdentifierPrimary ({BinaryExpression.left=current} '.' right=ComplexIdentifierPrimary)*;
+  
+
+//superType:
+//	DeclaredVariable | EnumVariable
+//;
+
+ComplexIdentifierPrimary returns Expression:  
+  {VariableIdentifier} var=[Variable|IDENTIFIER] ('[' expression=SimpleExpression ']')?  
+  | {PredefinedVariable} feature=('self'|'running')
+;
+
+
+// Referenceable Variables
+
+Definition returns Variable:
+  name=IDENTIFIER ':=' assignment=SimpleExpression semicolon?=';'?
+;
+
+Constant returns Variable:
+  name=IDENTIFIER
+;
+
+DeclaredSimpleVariable returns Variable:
+  name=IDENTIFIER ':' type=SimpleTypeSpecifier semicolon?=';'?
+;
+
+FormalParameter returns Variable:
+  name=IDENTIFIER
+;
+
+
+
+
+// terminal WORD : '0' ('u'|'s')? ('b'|'B'|'o'|'O'|'d'|'D'|'h'|'H') (('1'..'9') ('0'..'9')*)? '_' ('0'..'9'|'a'..'f'|'A'..'F')+;
+terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
+//terminal INT returns ecore::EInt: '-'? ('0'..'9')*;
