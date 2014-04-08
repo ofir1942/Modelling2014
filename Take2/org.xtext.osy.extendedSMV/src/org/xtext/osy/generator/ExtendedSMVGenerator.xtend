@@ -10,24 +10,9 @@ import org.xtext.osy.extendedSMV.Module
 import javax.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.xtext.osy.extendedSMV.Section
-import org.xtext.osy.extendedSMV.VariablesSection
+import org.xtext.osy.extendedSMV.VariableDeclaration
 import org.xtext.osy.extendedSMV.Assignments
 import org.xtext.osy.extendedSMV.LTLSpecification
-import org.xtext.osy.extendedSMV.BooleanDeclarion
-import org.xtext.osy.extendedSMV.StateVariableDeclaration
-import org.xtext.osy.extendedSMV.InitAssign
-import org.xtext.osy.extendedSMV.CaseAssign
-import org.xtext.osy.extendedSMV.BooleanInit
-import org.xtext.osy.extendedSMV.StateInit
-
-import org.xtext.osy.extendedSMV.CaseCondition
-import org.xtext.osy.extendedSMV.CaseNextLiteral
-import org.xtext.osy.extendedSMV.BooleanVar
-import org.xtext.osy.extendedSMV.NextAssign
-import org.xtext.osy.extendedSMV.DefaultCondition
-import org.xtext.osy.extendedSMV.SingleState
-import org.xtext.osy.extendedSMV.StateList
-import java.nio.file.Paths
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
 /**
@@ -64,7 +49,7 @@ class ExtendedSMVGenerator implements IGenerator {
 			if( s instanceof Assignments ){
 				code = code + CompileAssignments( s )
 			}
-			else if( s instanceof VariablesSection )  {
+			else if( s instanceof VariableDeclaration )  {
 				code = code + CompileVariables( s )
 			}
 			else if( s instanceof LTLSpecification ) {
@@ -79,7 +64,9 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 
 	def CompileLTLSpec(LTLSpecification specification) {
-		return "LTLSPEC G " + specification.expression.expression + "\n"
+		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification))
+		return code
+		//return "LTLSPEC " + specification.expression.expression + "\n"
 	}
 
 	def CompileAssignments( Assignments assignments) {
@@ -127,14 +114,14 @@ class ExtendedSMVGenerator implements IGenerator {
 //			return StateListString( literal )
 //	}
 
-	def StateListString(StateList list) {
-		var states = list.states.join( ',')	
-		return  '{' + states + '}' 
-	}
-
-	def SingleStateName(SingleState singleState) {
-		return singleState.state
-	}
+//	def StateListString(StateList list) {
+//		var states = list.states.join( ',')	
+//		return  '{' + states + '}' 
+//	}
+//
+//	def SingleStateName(SingleState singleState) {
+//		return singleState.state
+//	}
 
 //	def CompileCaseCondition(CaseCondition condition) {
 //		if( condition instanceof DefaultCondition )
@@ -143,9 +130,9 @@ class ExtendedSMVGenerator implements IGenerator {
 //			return BoolVarName( condition )
 //	}
 
-	def BoolVarName(BooleanVar boolVar) {
-		return boolVar.booleanVar.name
-	}
+//	def BoolVarName(BooleanVar boolVar) {
+//		return boolVar.booleanVar.name
+//	}
 
 //	def CompileInitAssignment(InitAssign assignment) {
 //		var code = ""
@@ -159,21 +146,21 @@ class ExtendedSMVGenerator implements IGenerator {
 //		return code
 //	}
 
-	def CompileStateInitAssignment(StateInit stateInit) {
-		return "\tinit(" + stateInit.varName.name + ') := ' + stateInit.value + ";\n"
-	}
-
-	def CompileBoolInitAssignment(BooleanInit boolInit) {
-		return "\tinit( " + boolInit.varName.name + ') := ' + boolInit.value + ";\n"
-	}
-	
-	def CompileVariables( VariablesSection varsSection) {
+//	def CompileStateInitAssignment(StateInit stateInit) {
+//		return "\tinit(" + stateInit.varName.name + ') := ' + stateInit.value + ";\n"
+//	}
+//
+//	def CompileBoolInitAssignment(BooleanInit boolInit) {
+//		return "\tinit( " + boolInit.varName.name + ') := ' + boolInit.value + ";\n"
+//	}
+//	
+	def CompileVariables( VariableDeclaration varsSection) {
 		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(varsSection))
 		code = code.replace( "VAR", "VAR\n")
 		code = code.replace( ";", ";\n")
 		
 		return code
-//		
+		
 //		var code = "\nVAR\n"
 //		for( v: varsSection.variables ) {
 //			if( v instanceof BooleanDeclarion )
@@ -187,16 +174,16 @@ class ExtendedSMVGenerator implements IGenerator {
 //				code = code + "Something is wrong\n"
 //			}
 //		}
-//		
+		
 //		code = code + "\n"
 //		return code
 	}
 	
-	def CompileStateVarDeclaration( StateVariableDeclaration stateVarDeclaration ){
-		var states = stateVarDeclaration.possibleStates.states.join( ',')	
-		return "\t" + stateVarDeclaration.name + ':' + '{' + states + '} ;' 
-	}
-	
+//	def CompileStateVarDeclaration( StateVariableDeclaration stateVarDeclaration ){
+//		var states = stateVarDeclaration.possibleStates.states.join( ',')	
+//		return "\t" + stateVarDeclaration.name + ':' + '{' + states + '} ;' 
+//	}
+//	
 //	def compile(Module m) '''
 //	  	MODULE «m.name»
 //	  	«FOR s:m.sections»

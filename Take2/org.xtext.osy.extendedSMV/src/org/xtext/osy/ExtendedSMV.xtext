@@ -1,137 +1,377 @@
 grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
 
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
 generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
-
-
 
 Model:
 	(modules += Module)*
 ;
-	
-
 
 Module:
-	'MODULE' name=ID
+	'MODULE' name=IDENTIFIER
 	// @YE: the params' expression is included in parentheses with question mark,
 	// because parameter list may be empty like in this example: Module A()  
-	//('(' ((params += IDENTIFIER) (',' params += IDENTIFIER)*)? ')')?
-	(sections += Section)+
+	('(' ((params += Parameter) (',' params += Parameter)*)? ')')?
+	(sections += Section)*
 ;
+
+Parameter:
+	name = IDENTIFIER
+;
+
+terminal IDENTIFIER:
+	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
+	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9' | '$' | '#' | '-')* 
+;
+
+terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
 
 Section:
-	Assignments | VariablesSection | LTLSpecification //| Transactions | LTLSpecification //| Comments
-;
-
-VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
-	'VAR'
-	(variables += VariableDeclaration)+
+	VariableDeclaration | Assignments | DefineDeclaration | Constraints
+	| LTLSpecification | CTLSpecification
 ;
 
 VariableDeclaration:
-	BooleanDeclarion | StateVariableDeclaration//|IntegerDeclarion |  | StateVariableDeclaration | Comment
-;
-//
-//IntegerDeclarion:
-//	name=ID ':' 'integer' ';'
-//;
-
-BooleanDeclarion:
-	name=ID ':' 'boolean' ';'
+  {VariableDeclaration}
+  'VAR' (variables+=DeclaredVariable)*
 ;
 
-StateVariableDeclaration:
-	name=ID ':' possibleStates=StateList ';'
+DeclaredVariable returns Variable:
+  name=IDENTIFIER ':' type=Type semicolon?=';'?
 ;
 
-StateList:
-	'{' states += ID (',' states += ID )* '}'
+Type: 
+  SimpleTypeSpecifier
+  | ModuleTypeSpecifier 
 ;
-//
-//Comment: 
-//	comment = SMV_COMMENT
-//;
-//
 
+SimpleTypeSpecifier:
+	{BooleanType} 'boolean'
+	| {WordType} ('word' '[' wordINT=INT ']') 
+	| {UnsignedWordType} ('unsigned' 'word' '[' uWordINT=INT ']')
+	| {SignedWordType} ('signed word' '[' signedINT=INT ']')
+	| {EnumType} '{' literals+=EmunLiteral (',' literals+=EmunLiteral)* '}'
+	| {IntervalType} lower=INT '..' upper=INT
+	| {ArrayType} 'array' lower=INT '..' upper=INT 'of' type=SimpleTypeSpecifier
+;
+
+ModuleTypeSpecifier:
+  {SyncrProcessType} module=[Module|IDENTIFIER] ("(" params+=SimpleExpression ("," params+=SimpleExpression)* ")")?
+  | {AsyncrProcessType} "process" module=[Module|IDENTIFIER] ("(" params+=SimpleExpression ("," params+=SimpleExpression)* ")")?
+;
+
+EmunLiteral:
+	EnumVariable
+	| IntegerConstant
+	| BooleanConstant
+;
+
+EnumVariable:  
+  name=IDENTIFIER
+;
+
+IntegerConstant returns Expression:
+  {IntegerConstant} constant=INT
+;
+
+DefineDeclaration:
+  {DefineDeclaration}
+  'DEFINE' (definitions+=Definition)*
+;
+
+Constraints:  
+  feature=BasicOpConstraints expression=SimpleExpression semicolon?=';'?
+;
+
+BasicOpConstraints:
+  'INIT'|'INVAR'|'TRANS'|'FAIRNESS'|'JUSTICE';
+
+SimpleExpression returns Expression: 
+	BasicExpression
+;
+
+SetBodyExpression returns Expression:
+  {SetBodyExpression}
+  '{' expressions+=SimpleExpression (',' expressions+=SimpleExpression)* '}'
+  //'{' expressions+=IDENTIFIER (',' expressions+=IDENTIFIER)* '}'
+;
+
+
+	
 Assignments:
+	{Assignments}
 	'ASSIGN'
-	(assignments += AssignmentExpression)+
+	(assignments += AssignmentExpression)*
 ;
-//
+
 AssignmentExpression:
-  InitAssign
+  SimpleAssign
+  | InitAssign
   | NextAssign
 ;
-//
+
+SimpleAssign:
+  id=ComplexIdentifier ':=' expression=SimpleExpression semicolon?=';'?
+;
+
 InitAssign:
-	BooleanInit | StateInit
+  'init' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)*  ')' ':=' expression=SimpleExpression semicolon?=';'?
 ;
 
 NextAssign:
-	'next' '(' varName = [StateVariableDeclaration] ')' ':=' nextStatement = CaseAssign
+  'next' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)* ')' ':=' expression=NextExpression semicolon?=';'?
 ;
 
-CaseAssign:
-	'case' 
-	(caseLiterals += CaseLiteral)+
-	'esac' ';'
+NextExpression returns Expression:
+  SimpleExpression
 ;
 
-CaseLiteral:
-	condition=CaseCondition ':' nextValue=CaseNextLiteral ';'
+BOOL:
+	'TRUE' | 'FALSE'
+;
+	
+
+BasicExpression returns Expression:
+  Implies;
+
+
+Implies returns Expression:
+  Equivalence ({BinaryExpression.left=current} feature=OpImplies right=Equivalence)*; // TODO: operator precedence
+  
+OpImplies:
+ '->';
+
+
+Equivalence returns Expression:
+  IfThenElse ({BinaryExpression.left=current} feature=OpEquivalence right=IfThenElse)*;
+  
+OpEquivalence:
+ '<->';
+  
+IfThenElse returns Expression:
+  Or ({IfThenElse.left=current}'?' then=Or ':' else=Or)? //TODO: not sure if OR!!!!!! maybe unaryEX
+;
+  
+Or returns Expression:
+  And ({BinaryExpression.left=current} feature=OpOr right=And)*;
+
+OpOr:
+  'xnor' | '|' | 'xor';
+
+And returns Expression:
+  BasicRelational ({BinaryExpression.left=current} feature=OpAnd right=BasicRelational)*;
+  
+OpAnd:
+  '&';
+ 
+BasicRelational returns Expression:
+  BasicIn ({BinaryExpression.left=current} feature=BasicOpRelational right=BasicIn)*;
+
+BasicOpRelational:
+  '=' | '!=' | '<' | '>' | '<=' | '>=';
+
+BasicIn returns Expression:
+  BasicUnion ({BinaryExpression.left=current} feature=BasicOpIn right=BasicUnion)*;
+
+BasicOpIn:
+ 'in';
+  
+BasicUnion returns Expression:
+  BasicShift ({BinaryExpression.left=current} feature=BasicOpUnion right=BasicShift)*;
+
+BasicOpUnion:
+ 'union';
+
+BasicShift returns Expression:
+  BasicAddSub ({BinaryExpression.left=current} feature=BasicOpShift right=BasicAddSub)*;  
+
+BasicOpShift:
+  '<<'|'>>';
+
+BasicAddSub returns Expression:
+  BasicRemainder ({BinaryExpression.left=current} feature=BasicOpAddSub right=BasicRemainder)*;  
+
+BasicOpAddSub:
+  '+'|'-';
+
+BasicRemainder returns Expression:
+  UnaryMinusExpression ({BinaryExpression.left=current} feature=BasicOpRemainder right=UnaryMinusExpression)*;
+  
+BasicOpRemainder:
+  'mod' | '*' | '/';  
+
+UnaryMinusExpression returns Expression:
+	BasicWordConcatenation | {UnaryMinusExpression} feature=BasicMinusOpUnary expression=UnaryMinusExpression
 ;
 
-CaseNextLiteral:
-	SingleState | StateList  
+BasicMinusOpUnary:
+	'-'
 ;
 
-SingleState:
-	state = ID
+BasicWordConcatenation returns Expression:
+   UnaryExclamationExpression ({BinaryExpression.left=current} feature=BasicOpWordConcatenation right=UnaryExclamationExpression)*;
+
+BasicOpWordConcatenation:
+  '::';
+  
+UnaryExclamationExpression returns Expression:
+	UnaryExpression | {UnaryExclamationExpression} feature=BasicExclamationOpUnary expression=UnaryExclamationExpression
 ;
 
-CaseCondition:
-	BooleanVar | DefaultCondition
+BasicExclamationOpUnary:
+	'!'
 ;
 
-DefaultCondition:
-	val = 'TRUE'
+UnaryExpression returns Expression:
+	SimpleExpressionParenthesis | Case | BooleanConstant | SetBodyExpression | EnumIdentifier
+	| Next | {Keywords} ('self' | 'running') 
 ;
 
-BooleanVar:
-	booleanVar = [BooleanDeclarion]
+Next returns Expression:
+  {Next}
+  'next' '(' expression=SimpleExpression ')'
+;  
+
+SimpleExpressionParenthesis returns Expression:
+  '(' Implies {SimpleExpressionParenthesis.expression=current} ')'
 ;
 
-//BooleanConstant:
-//	val=BOOLEAN_CONSTANT
-//;
-//
-//terminal BOOLEAN_CONSTANT:
-//	( 'TRUE' | 'FALSE' )
-//;
 
-BooleanInit:
-	'init' '(' varName=[BooleanDeclarion] ')' ':=' value = ( 'TRUE' | 'FALSE' )  ';'
+EnumIdentifier:
+	name += GeneralIdentifier ('.' name += GeneralIdentifier)*
 ;
 
-StateInit:
-	'init' '(' (varName = [StateVariableDeclaration]) ')' ':=' value=ID ';'
+GeneralIdentifier:
+	INT | IDENTIFIER 
 ;
+
+
+BooleanConstant returns Expression: 
+  {BooleanConstant} 
+  (isTrue?='TRUE'|'FALSE')
+;
+
+Case returns Expression:
+  {Case}
+  'case'
+    (caseBodies+=CaseBody)+
+  'esac'
+;
+
+CaseBody returns Expression:
+  {CaseBody}
+  case = SimpleExpression ':' assigment=SimpleExpression ';'
+;
+
+//Specs:
 
 LTLSpecification:
-	'LTLSPEC' expression = LTLExpression 
+	'LTLSPEC' expression=LTLExpression ';'?
 ;
 
-LTLExpression: 
-	'G' expression=ID
+CTLSpecification:
+	'CTLSPEC' CTLExpression ';'?
+;
+
+CTLExpression returns Expression:
+	SpecImplies
+;
+
+LTLExpression returns Expression: 
+	SpecImplies
+;
+
+SpecImplies returns Expression:
+  SpecEquivalence ({BinaryExpression.left=current} feature=OpImplies right=SpecEquivalence)*
+;
+  
+SpecEquivalence returns Expression:
+  SpecOr ({BinaryExpression.left=current} feature=OpEquivalence right=SpecOr)*
+;  
+  
+SpecOr returns Expression:
+  SpecAnd ({BinaryExpression.left=current} feature=OpOr right=SpecAnd)*
 ;
 
 
-//terminal fragment DIGIT:
-//	('0'..'9')
-//;
-//
-//terminal IDENTIFIER:
-//	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
-//	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | DIGIT | '$' | '#' | '-')* 
-//;
+SpecAnd returns Expression:
+  Triggered ({BinaryExpression.left=current} feature=OpAnd right=Triggered)*;
+  
+Triggered returns Expression:
+  Since ({BinaryExpression.left=current} feature=OpTriggered right=Since)*;
+  
+OpTriggered:
+  'T';
 
-//terminal SMV_COMMENT 	: '--' !('\n'|'\r')* ('\r'? '\n')?;
+Since returns Expression:
+  Releases ({BinaryExpression.left=current} feature=OpSince right=Releases)*;
+  
+OpSince:
+  'S';
+
+
+Releases returns Expression:
+  Until ({BinaryExpression.left=current} feature=OpReleases right=Until)*;
+
+OpReleases:
+  'V';
+
+
+Until returns Expression:
+  SpecUnaryExpression ({BinaryExpression.left=current} feature=OpUntil right=SpecUnaryExpression)*;
+  
+OpUntil:
+  'U';
+  
+SpecUnaryExpression returns Expression:
+	ExistsUntil | ForallUntil | 
+	{UnaryExpression} feature=OpSpecUnaryExpression expression=SpecUnaryExpression |
+	Primary 
+;
+
+OpSpecUnaryExpression:
+	'!' // Shared by Basic, LTL, CTL
+	|'X'|'G'|'F'|'Y'|'Z'|'H'|'O' // LTL
+	|'EG'|'EX'|'EF'|'AG'|'AX'|'AF' // CTL  	
+;
+
+  
+ExistsUntil returns Expression:
+  {ExistsUntil}
+  'E' '[' expression=SimpleExpression ']';
+    
+ForallUntil returns Expression:
+  {ForallUntil}
+  'A' '[' expression=SimpleExpression ']';
+
+  
+  
+Primary returns Expression:
+  Parenthesis
+  | EnumAssignment
+  | EnumIdentifier
+;
+
+EnumAssignment:
+	var += IDENTIFIER ('.' var+= IDENTIFIER)* '=' var2 = (IDENTIFIER | BOOL)
+;
+
+Parenthesis returns Expression:
+  '(' SpecImplies {Parenthesis.expression=current} ')'
+;
+
+ComplexIdentifier returns Expression:
+  ComplexIdentifierPrimary ({BinaryExpression.left=current} '.' right=ComplexIdentifierPrimary)*;
+  
+ComplexIdentifierPrimary returns Expression:  
+  {VariableIdentifier} var=[Variable|IDENTIFIER] ('[' expression=SimpleExpression ']')?  
+  | {PredefinedVariable} feature=('self'|'running')
+;
+
+
+// Referenceable Variables
+
+Definition returns Variable:
+  name=IDENTIFIER ':=' assignment=SimpleExpression semicolon?=';'?
+;

@@ -17,21 +17,12 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.lib.Extension;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 import org.xtext.osy.extendedSMV.Assignments;
-import org.xtext.osy.extendedSMV.BooleanDeclarion;
-import org.xtext.osy.extendedSMV.BooleanInit;
-import org.xtext.osy.extendedSMV.BooleanVar;
-import org.xtext.osy.extendedSMV.LTLExpression;
 import org.xtext.osy.extendedSMV.LTLSpecification;
 import org.xtext.osy.extendedSMV.Module;
 import org.xtext.osy.extendedSMV.Section;
-import org.xtext.osy.extendedSMV.SingleState;
-import org.xtext.osy.extendedSMV.StateInit;
-import org.xtext.osy.extendedSMV.StateList;
-import org.xtext.osy.extendedSMV.StateVariableDeclaration;
-import org.xtext.osy.extendedSMV.VariablesSection;
+import org.xtext.osy.extendedSMV.VariableDeclaration;
 
 /**
  * Generates code from your model files on save.
@@ -70,8 +61,8 @@ public class ExtendedSMVGenerator implements IGenerator {
         String _plus_1 = (code + _CompileAssignments);
         code = _plus_1;
       } else {
-        if ((s instanceof VariablesSection)) {
-          String _CompileVariables = this.CompileVariables(((VariablesSection)s));
+        if ((s instanceof VariableDeclaration)) {
+          String _CompileVariables = this.CompileVariables(((VariableDeclaration)s));
           String _plus_2 = (code + _CompileVariables);
           code = _plus_2;
         } else {
@@ -89,10 +80,9 @@ public class ExtendedSMVGenerator implements IGenerator {
   }
   
   public String CompileLTLSpec(final LTLSpecification specification) {
-    LTLExpression _expression = specification.getExpression();
-    String _expression_1 = _expression.getExpression();
-    String _plus = ("LTLSPEC G " + _expression_1);
-    return (_plus + "\n");
+    ICompositeNode _node = NodeModelUtils.getNode(specification);
+    String code = NodeModelUtils.getTokenText(_node);
+    return code;
   }
   
   public String CompileAssignments(final Assignments assignments) {
@@ -105,42 +95,7 @@ public class ExtendedSMVGenerator implements IGenerator {
     return code;
   }
   
-  public String StateListString(final StateList list) {
-    EList<String> _states = list.getStates();
-    String states = IterableExtensions.join(_states, ",");
-    return (("{" + states) + "}");
-  }
-  
-  public String SingleStateName(final SingleState singleState) {
-    return singleState.getState();
-  }
-  
-  public String BoolVarName(final BooleanVar boolVar) {
-    BooleanDeclarion _booleanVar = boolVar.getBooleanVar();
-    return _booleanVar.getName();
-  }
-  
-  public String CompileStateInitAssignment(final StateInit stateInit) {
-    StateVariableDeclaration _varName = stateInit.getVarName();
-    String _name = _varName.getName();
-    String _plus = ("\tinit(" + _name);
-    String _plus_1 = (_plus + ") := ");
-    String _value = stateInit.getValue();
-    String _plus_2 = (_plus_1 + _value);
-    return (_plus_2 + ";\n");
-  }
-  
-  public String CompileBoolInitAssignment(final BooleanInit boolInit) {
-    BooleanDeclarion _varName = boolInit.getVarName();
-    String _name = _varName.getName();
-    String _plus = ("\tinit( " + _name);
-    String _plus_1 = (_plus + ") := ");
-    String _value = boolInit.getValue();
-    String _plus_2 = (_plus_1 + _value);
-    return (_plus_2 + ";\n");
-  }
-  
-  public String CompileVariables(final VariablesSection varsSection) {
+  public String CompileVariables(final VariableDeclaration varsSection) {
     ICompositeNode _node = NodeModelUtils.getNode(varsSection);
     String code = NodeModelUtils.getTokenText(_node);
     String _replace = code.replace("VAR", "VAR\n");
@@ -148,18 +103,6 @@ public class ExtendedSMVGenerator implements IGenerator {
     String _replace_1 = code.replace(";", ";\n");
     code = _replace_1;
     return code;
-  }
-  
-  public String CompileStateVarDeclaration(final StateVariableDeclaration stateVarDeclaration) {
-    StateList _possibleStates = stateVarDeclaration.getPossibleStates();
-    EList<String> _states = _possibleStates.getStates();
-    String states = IterableExtensions.join(_states, ",");
-    String _name = stateVarDeclaration.getName();
-    String _plus = ("\t" + _name);
-    String _plus_1 = (_plus + ":");
-    String _plus_2 = (_plus_1 + "{");
-    String _plus_3 = (_plus_2 + states);
-    return (_plus_3 + "} ;");
   }
   
   public CharSequence compile(final Section s) {
