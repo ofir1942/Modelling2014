@@ -20,9 +20,16 @@ Parameter:
 	name = IDENTIFIER
 ;
 
+terminal IDENTIFIER:
+	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
+	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9' | '$' | '#' | '-')* 
+;
+
+terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
+
 Section:
-	VariableDeclaration | Assignments | Transactions | DefineDeclaration | Constraints
-	| LTLSpecification | CTLSpecification //| Comments
+	VariableDeclaration | Assignments | DefineDeclaration | Constraints
+	| LTLSpecification | CTLSpecification
 ;
 
 VariableDeclaration:
@@ -80,95 +87,9 @@ Constraints:
 BasicOpConstraints:
   'INIT'|'INVAR'|'TRANS'|'FAIRNESS'|'JUSTICE';
 
-
- 
-
-//InitConstraint:
-//	'INIT' SimpleExpression ';'?
-//;
-//
-//InVarConstraint:
-//	'INVAR' SimpleExpression ';'?
-//;
-
-
-//InVarSpecification:
-//	'INVARSPEC' SimpleExpression ';'
-//;
-//
-//ISADecleration: //TODO: this is derecated maybe we should remove this!
-//	 'ISA' IDENTIFIER
-//;
-//
-//ComputeSpecification:
-//	'COMPUTE' ComputeExpression
-//;
-
-//ComputeExpression:
-//	'MIN' '[' RTCTLExpression ',' RTCTLExpression ']' |
-//	'MAX' '[' RTCTLExpression ',' RTCTLExpression ']'
-//;
-//
-//RTCTLExpression:
-//	CTLExpression | 'EBF' Range RTCTLExpression | 'ABF' Range RTCTLExpression |
-//	'EBG' Range RTCTLExpression | 'ABG' Range RTCTLExpression |
-//	'A' '[' RTCTLExpression 'BU' Range RTCTLExpression  ']' |
-//	'E' '[' RTCTLExpression 'BU' Range RTCTLExpression  ']' 
-//;
-
-Range: 
-	IntegerNumber '..' IntegerNumber
-;
-
-//FairnessConsratint:
-//	'FAIRNESS' SimpleExpression ';'? | 'JUSTICE' SimpleExpression ';'? |
-//	'COMPASSION' '(' SimpleExpression ',' SimpleExpression ')' ';'?
-//;
-
-SimpleExpression returns Expression: //TODO: Note that simple expressions cannot contain next operators
+SimpleExpression returns Expression: 
 	BasicExpression
 ;
-
-//BasicExpression:
-//	Constant | VariableIdentifier | DefineIdentifier |
-//	'(' BasicExpression ')' | '!' BasicExpression | BasicExpression '&' BasicExpression |
-//	BasicExpression '|' BasicExpression | BasicExpression 'xor' BasicExpression | 
-//	BasicExpression 'xnor' BasicExpression | BasicExpression '->' BasicExpression |
-//	BasicExpression '<->' BasicExpression | BasicExpression '=' BasicExpression |
-//	BasicExpression '!=' BasicExpression | BasicExpression '<' BasicExpression | 
-//	BasicExpression '>' BasicExpression | BasicExpression '<=' BasicExpression | 
-//	BasicExpression '>=' BasicExpression | '-' BasicExpression | 
-//	BasicExpression '+' BasicExpression | BasicExpression '-' BasicExpression |
-//	BasicExpression '*' BasicExpression  | BasicExpression '/' BasicExpression |
-//	BasicExpression 'mod' BasicExpression | BasicExpression '>>' BasicExpression |
-//	BasicExpression '<<' BasicExpression | BasicExpression '[' Index ']' |
-//	BasicExpression '[' IntegerNumber ':' IntegerNumber ']' |
-//	BasicExpression '::' BasicExpression | 
-//	'word1 (' BasicExpression ')' | 'bool (' BasicExpression ')' | 'toint (' BasicExpression ')' | 
-//	'signed (' BasicExpression ')' | 'unsigned (' BasicExpression ')' | 
-//	'extend (' BasicExpression ',' BasicExpression ')' | 'resize (' BasicExpression ',' BasicExpression ')' |
-//	BasicExpression 'union' BasicExpression | '{' SetBodyExpr '}' | BasicExpression 'in' BasicExpression |
-//	BasicExpression '?' BasicExpression ':' BasicExpression | 'count (' BasicExpression ')' |
-//	CaseExpr | 'next' '(' BasicExpression ')'    
-//		
-//;
-
-//BasicExpression returns Expression:
-//	AND
-//;
-//
-//
-//AND returns Expression:
-//	OR ({BinaryExpression.left=current} feature=AND_SYMBOL right=OR)*
-//;
-//
-//AND_SYMBOL:
-//	'&'
-//;
-//
-//OR:
-//	'l'
-//;
 
 SetBodyExpression returns Expression:
   {SetBodyExpression}
@@ -176,215 +97,13 @@ SetBodyExpression returns Expression:
   //'{' expressions+=IDENTIFIER (',' expressions+=IDENTIFIER)* '}'
 ;
 
-//Constant:
-//	BooleanConstant | IntegerConstant | SymbolicConstant | WordConstant | RangeConstant   
-//;
 
-//BooleanConstant: 
-//	BOOL
-//;
-
-//IntegerConstant: 
-//	IntegerNumber
-//;
-
-SymbolicConstant:
-	IDENTIFIER
-;
-
-//WordConstant:
-//	'0' WordSignSpecifier? WordBase WordWidth? '_' WordValue
-//;
-
-WordSignSpecifier:
-	'u' | 's'
-;
-
-WordBase:
-	'b' | 'B' | 'o' | 'O' | 'd' | 'D' | 'h' | 'H'
-;
-
-WordWidth:
-	IntegerNumber //TODO: must be possitive - check that this if possitive with a validator rule
-;
-
-//WordValue:
-//	HexDigit | WordValueTAG 
-//;
-//
-//WordValueTAG:
-//	HexDigit WordValue
-//;
-
-//HexDigit:
-//	'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
-//	'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'A' | 'B' | 'C' | 'D' |
-//	'E' | 'F' 
-//;
-
-RangeConstant:
-	IntegerNumber '..' IntegerNumber
-;
-
-IntegerNumber:
-	INT // TODO: this is not exactly an int - CHECK THIS PLEASE
-;
-
-// DIGIT: 
-//	('0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9')
-//;
-
-DefineIdentifier:
-	ComplexIdentifier
-;
-
-VariableIdentifier returns Expression:
-	ComplexIdentifier
-;
-
-//ComplexIdentifier returns Expression:
-//	('self' | IDENTIFIER) ComplexIdentifierTag?
-//	//IDENTIFIER | ComplexIdentifier '.' IDENTIFIER // | ComplexIdentifier '[' SimpleExpression ']' | 'self'
-//	;
-//
-//ComplexIdentifierTag returns Expression:
-//	('.'IDENTIFIER) ComplexIdentifierTag? | '[' SimpleExpression ']'
-//;
-
-terminal IDENTIFIER:
-	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
-	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9' | '$' | '#' | '-')* 
-;
-
-//terminal IDENTIFIER_FIRST_CHARACTER:
-//	('a'..'z' | 'A'..'Z' | '_')
-//;
-
-//IdentifierConsecutiveCharacter:
-//	IDENTIFIER_FIRST_CHARACTER | DIGIT | '$' | '#' | '-'
-//;
-
-
-Index:
-	IntegerNumber // TODO: Maybe add word[XXX] 
-;
-
-CaseExpr:
-	'case' CaseBody 'esac'
-;
-
-//CaseBody:
-//	(BasicExpression ':' {BasicExpression.left=current} ';') {CaseBody.left=current}
-//;
-
-
-//Comment: 
-//	comment = SMV_COMMENT
-//;
-
-
-// terminal AND_OR : '&' | '|' ;
-
-VariablesSection: //@SM: possible sequence VAR -> ASSIGN -> VAR - no need to actually declare anything 
-	'VAR'
-	(variables += VariableDeclaration)*
-;
 	
 Assignments:
 	{Assignments}
 	'ASSIGN'
 	(assignments += AssignmentExpression)*
 ;
-
-Transactions:
-	'TRANS'
-	(transaction += TransactionStatement)+
-;
-
-TransactionStatement:
-	precondition = TransactionPrecondition '->' postTransaction = PostTransaction
-;
-
-TransactionPrecondition: 
-	preconditions += PreconditionStatement 
-	//preconditions += PreconditionStatement ( logicalOperator += AND_OR preconditions += PreconditionStatement)*  
-;
-
-PreconditionStatement:
-	IntegerPrecondition | BooleanPrecondition | StatePrecondition
-;
-
-StatePrecondition:
-	var = [StateVariableDeclaration] '=' value=IDENTIFIER
-;
-
-BooleanPrecondition:
-	var = [BooleanDeclarion] '=' value=BOOL
-;
-
-IntegerPrecondition:
-	var = [IntegerDeclarion] '=' value=INT
-;
-
-PostTransaction: 
-	postTransactions += PostTransactionStatement 
-	//( logicalOperator += AND_OR postTransactions += PostTransactionStatement )*
-;
-
-PostTransactionStatement:
-	ConditionalPostTRansaction | SimplePostTransaction //| Comment
-;
-
-SimplePostTransaction:
-	IntegerPostTransaction | BooleanPostTransaction | StatePostTransaction //| Comment 
-;
-
-StatePostTransaction:
-	'next' '(' var = [StateVariableDeclaration] ')' '=' value = IDENTIFIER
-;
-
-BooleanPostTransaction:
-	'next' '(' var = [BooleanDeclarion] ')' '=' value = BOOL
-;
-
-IntegerPostTransaction:
-	'next' '(' var = [IntegerDeclarion] ')' '=' value = INT
-;
-
-ConditionalPostTRansaction:
-	name = IDENTIFIER
-;
-
-IntegerDeclarion:
-	name=IDENTIFIER ':' 'integer' ';'
-;
-
-BooleanDeclarion:
-	name=IDENTIFIER ':' 'boolean' ';'
-;
-
-StateVariableDeclaration:
-	name=IDENTIFIER ':' '{' states += IDENTIFIER (',' states += IDENTIFIER )* '}' ';'
-;
-
-
-//VarType: 
-//	'boolean' | 'integer'
-//;
-
-//AssignmentExpression:
-//	id = ComplexIdentifier ':=' expression = SimpleExpression |
-//	InitAssignment | NextAssignment |
-//	IntegerAssignment | BooleanAssignment | StateAssignment  | Comment
-//;
-//
-//InitAssignment:
-//	'init' '(' ComplexIdentifier ')' ':=' {SimpleExpression.assign2=current}
-//;
-//
-//NextAssignment:
-//	'next' '(' ComplexIdentifier ')' ':=' {BasicExpression.assign3=current}
-//;
 
 AssignmentExpression:
   SimpleAssign
@@ -400,8 +119,6 @@ InitAssign:
   'init' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)*  ')' ':=' expression=SimpleExpression semicolon?=';'?
 ;
 
-
-
 NextAssign:
   'next' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)* ')' ':=' expression=NextExpression semicolon?=';'?
 ;
@@ -410,47 +127,22 @@ NextExpression returns Expression:
   SimpleExpression
 ;
 
-BooleanAssignment:
-	'init' '(' var = [BooleanDeclarion] ')' ':=' value=BOOL ';'
-;
-
 BOOL:
 	'TRUE' | 'FALSE'
 ;
-
-IntegerAssignment:
-	'init' '(' var = [IntegerDeclarion] ')' ':=' value=INT ';'
-;
-
-StateAssignment:
-	'init' '(' var = [StateVariableDeclaration] ')' ':=' value=IDENTIFIER ';'
-;
-
 	
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BasicExpression returns Expression:
   Implies;
 
-// Shared by Basic, LTL, CTL
+
 Implies returns Expression:
   Equivalence ({BinaryExpression.left=current} feature=OpImplies right=Equivalence)*; // TODO: operator precedence
   
 OpImplies:
  '->';
 
-// Shared by Basic, LTL, CTL
+
 Equivalence returns Expression:
   IfThenElse ({BinaryExpression.left=current} feature=OpEquivalence right=IfThenElse)*;
   
@@ -531,22 +223,6 @@ BasicExclamationOpUnary:
 	'!'
 ;
 
-//SetExpression:
-//	IndexExpression | RangeExpression | CommaExpression
-//;
-
-//IndexExpression:
-//	'[' INT ']'
-//;
-//
-//RangeExpression:
-//	'[' Range ']'
-//;
-//
-//CommaExpression:
-//	INT ',' INT
-//;
-
 UnaryExpression returns Expression:
 	SimpleExpressionParenthesis | Case | BooleanConstant | SetBodyExpression | EnumIdentifier
 	| Next | {Keywords} ('self' | 'running') 
@@ -588,15 +264,7 @@ CaseBody returns Expression:
   case = SimpleExpression ':' assigment=SimpleExpression ';'
 ;
 
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-//SPECS
-//////////////////////////////////////////////////////////////////////////////////
-
+//Specs:
 
 LTLSpecification:
 	'LTLSPEC' expression=LTLExpression ';'?
@@ -630,28 +298,26 @@ SpecOr returns Expression:
 SpecAnd returns Expression:
   Triggered ({BinaryExpression.left=current} feature=OpAnd right=Triggered)*;
   
-  // LTL
 Triggered returns Expression:
   Since ({BinaryExpression.left=current} feature=OpTriggered right=Since)*;
   
 OpTriggered:
   'T';
 
-// LTL
 Since returns Expression:
   Releases ({BinaryExpression.left=current} feature=OpSince right=Releases)*;
   
 OpSince:
   'S';
 
-// LTL
+
 Releases returns Expression:
   Until ({BinaryExpression.left=current} feature=OpReleases right=Until)*;
 
 OpReleases:
   'V';
 
-// LTL
+
 Until returns Expression:
   SpecUnaryExpression ({BinaryExpression.left=current} feature=OpUntil right=SpecUnaryExpression)*;
   
@@ -670,14 +336,11 @@ OpSpecUnaryExpression:
 	|'EG'|'EX'|'EF'|'AG'|'AX'|'AF' // CTL  	
 ;
 
-//// CTL
-// TODO thats to hacky, because we normally expect an Until expression, not a SimpleExpression  
+  
 ExistsUntil returns Expression:
   {ExistsUntil}
   'E' '[' expression=SimpleExpression ']';
     
-//// CTL
-// TODO thats to hacky, because we normally expect an Until expression, not a SimpleExpression
 ForallUntil returns Expression:
   {ForallUntil}
   'A' '[' expression=SimpleExpression ']';
@@ -688,40 +351,19 @@ Primary returns Expression:
   Parenthesis
   | EnumAssignment
   | EnumIdentifier
-  //| CaseType
-  //| IntervallExpression
-  //| ComplexIdentifier  // VariableIdentifier + DefineIdentifier
-  //| BooleanConstant
-  //| IntegerConstant  
-  //| WordConstant  
 ;
 
 EnumAssignment:
 	var += IDENTIFIER ('.' var+= IDENTIFIER)* '=' var2 = (IDENTIFIER | BOOL)
 ;
 
-//CaseType:
-//	var=[Type]
-//;
-
 Parenthesis returns Expression:
   '(' SpecImplies {Parenthesis.expression=current} ')'
 ;
 
-IntervallExpression returns Expression:
-  {IntervallExpression}
-  lower=INT '..' upper=INT
-;
-
-
 ComplexIdentifier returns Expression:
   ComplexIdentifierPrimary ({BinaryExpression.left=current} '.' right=ComplexIdentifierPrimary)*;
   
-
-//superType:
-//	DeclaredVariable | EnumVariable
-//;
-
 ComplexIdentifierPrimary returns Expression:  
   {VariableIdentifier} var=[Variable|IDENTIFIER] ('[' expression=SimpleExpression ']')?  
   | {PredefinedVariable} feature=('self'|'running')
@@ -733,22 +375,3 @@ ComplexIdentifierPrimary returns Expression:
 Definition returns Variable:
   name=IDENTIFIER ':=' assignment=SimpleExpression semicolon?=';'?
 ;
-
-Constant returns Variable:
-  name=IDENTIFIER
-;
-
-DeclaredSimpleVariable returns Variable:
-  name=IDENTIFIER ':' type=SimpleTypeSpecifier semicolon?=';'?
-;
-
-FormalParameter returns Variable:
-  name=IDENTIFIER
-;
-
-
-
-
-// terminal WORD : '0' ('u'|'s')? ('b'|'B'|'o'|'O'|'d'|'D'|'h'|'H') (('1'..'9') ('0'..'9')*)? '_' ('0'..'9'|'a'..'f'|'A'..'F')+;
-terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
-//terminal INT returns ecore::EInt: '-'? ('0'..'9')*;
