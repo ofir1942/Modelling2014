@@ -65,7 +65,7 @@ class ExtendedSMVGenerator implements IGenerator {
 
 	def CompileLTLSpec(LTLSpecification specification) {
 		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification))
-		return code
+		return code 
 		//return "LTLSPEC " + specification.expression.expression + "\n"
 	}
 

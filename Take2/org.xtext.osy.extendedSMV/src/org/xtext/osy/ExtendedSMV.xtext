@@ -369,9 +369,6 @@ ComplexIdentifierPrimary returns Expression:
   | {PredefinedVariable} feature=('self'|'running')
 ;
 
-
-// Referenceable Variables
-
 Definition returns Variable:
   name=IDENTIFIER ':=' assignment=SimpleExpression semicolon?=';'?
 ;
