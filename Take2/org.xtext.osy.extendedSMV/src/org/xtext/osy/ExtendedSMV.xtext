@@ -267,19 +267,19 @@ CaseBody returns Expression:
 //Specs:
 
 LTLSpecification:
-	'LTLSPEC' expression=LTLExpression ';'?
+	'LTLSPEC' ((expression=LTLExpression ('&' pattern=PATTERN)?) | pattern=PATTERN) ';'?
 ;
 
 CTLSpecification:
-	'CTLSPEC' CTLExpression ';'?
+	'CTLSPEC' ((expression=CTLExpression ('&' pattern=PATTERN)?) | pattern=PATTERN) ';'?
 ;
 
 CTLExpression returns Expression:
-	SpecImplies
+	SpecImplies 
 ;
 
 LTLExpression returns Expression: 
-	SpecImplies
+	SpecImplies 
 ;
 
 SpecImplies returns Expression:
@@ -352,6 +352,11 @@ Primary returns Expression:
   | EnumAssignment
   | EnumIdentifier
 ;
+
+terminal PATTERN:
+	 '"' -> '"'
+;
+
 
 EnumAssignment:
 	var += IDENTIFIER ('.' var+= IDENTIFIER)* '=' var2 = (IDENTIFIER | BOOL)
