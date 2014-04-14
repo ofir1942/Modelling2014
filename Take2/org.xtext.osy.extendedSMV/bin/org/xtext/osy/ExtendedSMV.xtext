@@ -29,7 +29,31 @@ terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
 
 Section:
 	VariableDeclaration | Assignments | DefineDeclaration | Constraints
-	| LTLSpecification | CTLSpecification
+	| LTLSpecification | CTLSpecification | PatternsDefinitions
+;
+
+PatternsDefinitions:
+	'PATTERNS'
+	(macros += MacroDeclaration)+
+;
+
+MacroDeclaration:
+//	name=ID '(' var1=ID ',' var2=ID ')' ':' macroPattern = STRING  '=>'  macroInterpretation = STRING  ';'
+	MacroDeclaration_1_var  | 
+	MacroDeclaration_2_vars | 
+	MacroDeclaration_3_vars 
+; 
+
+MacroDeclaration_1_var:
+	name=IDENTIFIER '(' var1=IDENTIFIER  ')' ':' macroPattern = PATTERN  '=>'  macroInterpretation = PATTERN  ';'
+;
+
+MacroDeclaration_2_vars:
+	name=IDENTIFIER '(' var1=IDENTIFIER ',' var2=IDENTIFIER ')' ':' macroPattern = PATTERN  '=>'  macroInterpretation = PATTERN  ';'
+;
+
+MacroDeclaration_3_vars:
+	name=IDENTIFIER '(' var1=IDENTIFIER ',' var2=IDENTIFIER ',' var3=IDENTIFIER ')' ':' macroPattern = PATTERN  '=>'  macroInterpretation = PATTERN  ';'
 ;
 
 VariableDeclaration:
@@ -267,19 +291,19 @@ CaseBody returns Expression:
 //Specs:
 
 LTLSpecification:
-	'LTLSPEC' expression=LTLExpression ';'?
+	'LTLSPEC' ((expression=LTLExpression ('&' patterns+=PATTERN)*) | (patterns+=PATTERN)+) ';'?
 ;
 
 CTLSpecification:
-	'CTLSPEC' CTLExpression ';'?
+	'CTLSPEC' ((expression=CTLExpression ('&' pattern=PATTERN)?) | pattern=PATTERN) ';'?
 ;
 
 CTLExpression returns Expression:
-	SpecImplies
+	SpecImplies 
 ;
 
 LTLExpression returns Expression: 
-	SpecImplies
+	SpecImplies 
 ;
 
 SpecImplies returns Expression:
@@ -352,6 +376,11 @@ Primary returns Expression:
   | EnumAssignment
   | EnumIdentifier
 ;
+
+terminal PATTERN:
+	 '"' -> '"'
+;
+
 
 EnumAssignment:
 	var += IDENTIFIER ('.' var+= IDENTIFIER)* '=' var2 = (IDENTIFIER | BOOL)

@@ -14,6 +14,16 @@ import org.xtext.osy.extendedSMV.VariableDeclaration
 import org.xtext.osy.extendedSMV.Assignments
 import org.xtext.osy.extendedSMV.LTLSpecification
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.xtext.osy.extendedSMV.PatternsDefinitions
+import java.io.BufferedWriter
+import java.io.FileOutputStream
+import java.io.PrintWriter
+import java.nio.file.Files
+import com.google.common.base.Charsets
+import java.nio.charset.Charset
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import org.eclipse.xtext.parser.packrat.matching.CharacterArray
 
 /**
  * Generates code from your model files on save.
@@ -23,6 +33,9 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
  
 class ExtendedSMVGenerator implements IGenerator {
 	@Inject extension IQualifiedNameProvider
+	
+	FileOutputStream out
+	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		for(e: resource.allContents.toIterable.filter(Module)) {
 			var filePath = e.fullyQualifiedName.toString("/") + ".smv"
@@ -55,6 +68,9 @@ class ExtendedSMVGenerator implements IGenerator {
 			else if( s instanceof LTLSpecification ) {
 				code = code + CompileLTLSpec( s )
 			}
+			else if( s instanceof PatternsDefinitions ) {
+				CompilePatterns( s )
+			}
 			else  {
 				code = code + "Somethingelse1+\n"
 			}
@@ -62,11 +78,53 @@ class ExtendedSMVGenerator implements IGenerator {
 		
 		return code
 	}
+	
+	def CompilePatterns(PatternsDefinitions definitions) {
+		var patterns = NodeModelUtils.getTokenText(NodeModelUtils.getNode(definitions))
+		patterns = patterns.replace( "PATTERNS", "")
+		patterns = patterns.replace( ";", ";\n")
+		
+		var file = new FileOutputStream(  'c:/dev/temp/macros.txt')
+		file.write( patterns.getBytes( Charsets.UTF_8 ) )
+		file.close()	
+	}
 
 	def CompileLTLSpec(LTLSpecification specification) {
-		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification))
+		var code = 'LTLSPEC '
+		
+		if( specification.expression != null )
+		{
+			code = code + NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification.expression ))
+		}
+		
+		for( p: specification.patterns ) {
+			if( specification.expression != null )
+			{	
+				code = code + ' & '
+			} 
+			
+			//var patternString = NodeModelUtils.getTokenText(NodeModelUtils.getNode( p ))
+			code = code + TranslatePattern( p )
+			
+		}
+		
+		//var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification))
 		return code 
 		//return "LTLSPEC " + specification.expression.expression + "\n"
+	}
+	
+	def TranslatePattern(String pattern) {
+		var proc = Runtime.runtime.exec("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py c:/dev/temp/macros.txt " + pattern)
+		var stream = new InputStreamReader(  proc.inputStream )
+		var reader = new BufferedReader(stream)
+		
+		return reader.readLine()
+//		//return stream.read( translatedPattern )
+//		 val char[100] translatedPattern  
+//		stream.read()
+////		
+//		var translatedPatternString = new String( translatedPattern )
+//		return translatedPatternString
 	}
 
 	def CompileAssignments( Assignments assignments) {
