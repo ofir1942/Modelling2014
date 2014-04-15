@@ -1,109 +1,91 @@
 package org.xtext.osy.views;
 
 import java.util.ArrayList;
-
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
-
+/**
+ * This class represents the view web part that displays whether the specifications
+ * are true or displays counter examples otherwise. 
+ */
 public class CounterExampleView extends ViewPart {
 
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
+	
+	//The ID of the view as specified by the extension.
 	public static final String ID = "org.xtext.osy.views.CounterExampleView";
-	private final String IMAGE_COLUMN 	= "Image";
 
-	// Set column names
+	//The name of the column in the viewpath 
+	private final String IMAGE_COLUMN 	= "SPEC Image";
+
+	//Table column names int the Counter Example view part.
 	private String[] columnNames = new String[] { 
 			IMAGE_COLUMN
 			};
 	
+	//The table that will hold one row per specification.
 	private Table table;	
+	//TableViewer is the class that displays this table.
 	private TableViewer tableViewer;
-	public SpecList specList = new SpecList();
+	//The specification list to display.
+	private SpecList specList = new SpecList();
 
-
-	
-	class CounterExampleContentProvider implements IStructuredContentProvider {
-		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-		}
-		public void dispose() {
-		}
-		public Object[] getElements(Object parent) {
-			return new String[] {"LTLSPEC1:" , "LTLSPEC2:"};
-		}
-	}
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
-		public String getColumnText(Object obj, int index) {
-			return getText(obj);
-		}
-		public Image getColumnImage(Object obj, int index) {
-			return getImage(obj);
-		}
-		public Image getImage(Object obj) {
-			return new Image(null, "C:\\aaa.jpg");
-		}
-	}
-
-	//private TableViewer viewer;
-
-
-	public CounterExampleView() {
-		super();
-	}
-
+	/**
+	 * @see org.eclipse.ui.part.ViewPart#init(org.eclipse.ui.IViewSite)
+	 */
 	public void init(IViewSite site) throws PartInitException {
 		super.init(site);
-		// Normally we might do other stuff here.
 	}
 	
+	/**
+	 * Adds the specification to the view.
+	 * @param spec The specification to add.
+	 */
 	public void addSpec(String spec){
 		specList.addSpec(spec);
 	}
 	
+	/**
+	 * Adds all specifications in the given list to the Counter Example view.
+	 * @param specs List of specification to add.
+	 */
 	public void addSpecs(ArrayList<String> specs){
 		for(String spec: specs){
 			specList.addSpec(spec);
 		}
 	}
 
+	/**
+	 * Clears all specifications from the Counter Example view.
+	 */
 	public void clearSpecs(){
 		specList.clearSpecs();
 	}
 
+	/**
+	 * @see org.eclipse.ui.part.WorkbenchPart#setFocus()
+	 */
 	public void setFocus() {
 		tableViewer.getControl().setFocus();
 	}
-
+	
+	/**
+	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	 */
 	public void createPartControl(Composite parent) {
-		/*		label = new Label(parent, 0);
-			label.setText("Hello World");
-		 */
-
-		/*
-		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		viewer.setContentProvider(new CounterExampleContentProvider());
-		viewer.setLabelProvider(new ViewLabelProvider());
-		viewer.setInput(getViewSite());
-		*/
-		
 		createTable(parent);
 		createTableViewer();
-
-		
 	}
-
+	/**
+	 * This method creates the table for displaying the specification result.
+	 * @param parent
+	 */
 	private void createTable(Composite parent) {
 		int style = SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | 
 					SWT.FULL_SELECTION | SWT.HIDE_SELECTION;
@@ -119,36 +101,33 @@ public class CounterExampleView extends ViewPart {
 		table.setHeaderVisible(true);
 
 		TableColumn column = new TableColumn(table, SWT.CENTER, 0);		
-		column.setText("SPEC Image");
+		column.setText(IMAGE_COLUMN);
 		column.setWidth(2000);
-		
-		// 2nd column with task Description
-		/*column = new TableColumn(table, SWT.LEFT, 1);
-		column.setText("Image");
-		column.setWidth(400);*/
-
 	}
 	
 	/**
-	 * Create the TableViewer 
+	 * Creates the TableViewer of the created table. 
 	 */
 	private void createTableViewer() {
 		tableViewer = new TableViewer(table);
 		tableViewer.setUseHashlookup(true);
 		tableViewer.setColumnProperties(columnNames);
 		tableViewer.setContentProvider(new ContentProvider());
-		tableViewer.setLabelProvider(new MyLabelProvider());
+		tableViewer.setLabelProvider(new SpecLabelProvider());
 		tableViewer.setInput(specList);
 	}
 	
 	/**
-	 * InnerClass that acts as a proxy for the ExampleTaskList 
-	 * providing content for the Table. It implements the ITaskListViewer 
-	 * interface since it must register changeListeners with the 
-	 * ExampleTaskList 
+	 * This class holds the content of the TableViewer.
+	 * It is also responsible of registering or removing the change listeners with the 
+	 * specificationListViewer 
 	 */
 	class ContentProvider implements IStructuredContentProvider, ISpecListViewer {
 		
+		/**
+		 * registers or remove change listers when the table content gets updated.
+		 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
+		 */
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 			if (newInput != null)
 				((SpecList) newInput).addChangeListener(this);
@@ -156,13 +135,18 @@ public class CounterExampleView extends ViewPart {
 				((SpecList) oldInput).removeChangeListener(this);
 		}
 
+		/**
+		 * Removes the listener (the current one).
+		 */
 		public void dispose() {
 			specList.removeChangeListener(this);
 		}
 
-		// Return the tasks as an array of Objects
+		/**
+		 * @return All the specifications in this view.
+		 */
 		public Object[] getElements(Object parent) {
-			return specList.getTasks().toArray();
+			return specList.getSpecs().toArray();
 		}
 
 		/* (non-Javadoc)

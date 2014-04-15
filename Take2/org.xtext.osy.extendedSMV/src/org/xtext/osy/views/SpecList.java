@@ -6,44 +6,39 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * Class that plays the role of the domain model in the TableViewerExample
- * In real life, this class would access a persistent store of some kind.
- * 
+ * This class is responsible of holding all the specification that are in our SMV file.
+ * It represents the domain model of the Counter Example View, i.e. when we add
+ * a specification the view gets updated through several listeners. 
  */
 
 public class SpecList {
 
-	private Vector<Spec> specs = new Vector<Spec>();
-	private Set<ISpecListViewer> changeListeners = new HashSet<ISpecListViewer>();
+	//List of specifications
+	private Vector<Spec> specs;
+	//List of specification change listener.
+	//When a specification is changed the listener is fired and changes the view correspondly
+	private Set<ISpecListViewer> changeListeners;
 	
 	/**
-	 * Constructor
+	 * Ctor.
+	 * Creates an empty list of specification.
+	 * It will be populated when the NuSMV project would run. 
 	 */
 	public SpecList() {
-		super();
-		this.initData();
+		specs = new Vector<Spec>();
+		changeListeners = new HashSet<ISpecListViewer>();
 	}
-	
-	/*
-	 * Initialize the table data.
-	 * Create COUNT tasks and add them them to the 
-	 * collection of tasks
-	 */
-	private void initData() {
-		/*Spec task;
-		for (int i = 0; i < 10; i++) {
-			task = new Spec("Task "  + i);
-			
-			specs.add(task);
-		}*/
-	};
+
 	/**
-	 * Return the collection of tasks
+	 * @returns The collection of the specifications
 	 */
-	public Vector<Spec> getTasks() {
+	public Vector<Spec> getSpecs() {
 		return specs;
 	}
 	
+	/**
+	 * Removes all specification and clears the Counter Example View.
+	 */
 	public void clearSpecs(){
 		for(Spec s: specs){ // remove all listeners
 			Iterator<ISpecListViewer> iterator = changeListeners.iterator();
@@ -54,18 +49,20 @@ public class SpecList {
 	}
 	
 	/**
-	 * Add a new task to the collection of tasks
+	 * Adds the given specification to the collection of specifications.
+	 * @param specification the given specification
 	 */
-	public void addSpec(String spec) {
-		Spec task = new Spec(spec);
-		specs.add(specs.size(), task);
+	public void addSpec(String specification) {
+		Spec spec = new Spec(specification);
+		specs.add(specs.size(), spec);
 		Iterator<ISpecListViewer> iterator = changeListeners.iterator();
 		while (iterator.hasNext())
-			((ISpecListViewer) iterator.next()).addSpec(task);
+			((ISpecListViewer) iterator.next()).addSpec(spec);
 	}
 
 	/**
-	 * @param spec
+	 * Removes the given specification to the collection of specifications.
+	 * @param specification the given specification
 	 */
 	public void removeSpec(Spec spec) {
 		specs.remove(spec);
@@ -74,24 +71,18 @@ public class SpecList {
 			((ISpecListViewer) iterator.next()).removeSpec(spec);
 	}
 
-	/**
-	 * @param spec
-	 */
-	public void specChanged(Spec spec) {
-		Iterator<ISpecListViewer> iterator = changeListeners.iterator();
-		while (iterator.hasNext())
-			((ISpecListViewer) iterator.next()).updateSpec(spec);
-	}
 
 	/**
-	 * @param viewer
+	 * Removes a listener.
+	 * @param viewer the given viewer to remove.
 	 */
 	public void removeChangeListener(ISpecListViewer viewer) {
 		changeListeners.remove(viewer);
 	}
 
 	/**
-	 * @param viewer
+	 * Adds a listener.
+	 * @param viewer the given viewer to add.
 	 */
 	public void addChangeListener(ISpecListViewer viewer) {
 		changeListeners.add(viewer);
