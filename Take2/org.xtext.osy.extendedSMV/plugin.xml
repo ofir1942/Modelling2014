@@ -14,7 +14,7 @@
   
 <extension point="org.eclipse.debug.core.launchConfigurationTypes">
     <launchConfigurationType
-        name="Shevah Applet"
+        name="NuSMV"
         delegate="org.xtext.osy.launch.Launch"
         modes="run, debug"               
         id="org.eclipse.jdt.launching.javaApplet">        

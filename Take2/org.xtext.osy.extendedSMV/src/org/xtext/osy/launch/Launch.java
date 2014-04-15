@@ -22,39 +22,33 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.xtext.osy.views.CounterExampleView;
 
-
+/**
+ * This Class is used to process the created NuSMV file, it will execute it, and will display the results of the given specifications.
+ */
 public class Launch implements ILaunchConfigurationDelegate{
 
+	/**
+	 * The main method. When the NuSMV project is executed this method is called.
+	 * It is responsible of several things:
+	 * 		1. It will find the created SMV file from the ESMV in the project that was executed.
+	 * 		2. Using a Python script it will run the NuSMV tool with the created SMV file.
+	 * 		3. Using the supplied DOT library it will create visual counter examples (if exists), 
+	 * 		   otherwise it will generate and diplay an appropriate message
+	 * 
+	 * for other parameters:
+	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
+	 */
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		//get object which represents the workspace  			  
 		String workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
 		String projectName = configuration.getAttribute("org.eclipse.jdt.launching.PROJECT_ATTR", "");
-		FileFinder finder = new FileFinder();
-		Path startPath = Paths.get(workspaceLocation+"\\"+projectName);
-        try {
-			Files.walkFileTree(startPath, finder);
-		} catch (IOException e) {
-			System.err.println("Failed to walk file tree: "+startPath.toString());
-			e.printStackTrace();
-		} 
-		String smvFilePath = finder.getPath();
-        /*try {
-			Process p = new ProcessBuilder("nusmv.exe",smvFilePath).start();	
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\out.txt"));
-			String line;
-			while ((line = in.readLine()) != null) {
-			    out.write(line+'\n');
-			}
-			out.close();
-			in.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
-		System.out.println("smv path: "+smvFilePath);
+		Path smvStartPath = Paths.get(workspaceLocation+"\\"+projectName);
+		String fileName = ".smv";
+		String smvFilePath = findFilePath(smvStartPath, fileName);
+		
+
 		final ArrayList<String> specs = new ArrayList<String>();
 		try {
 			Process p = new ProcessBuilder("python.exe", "C:\\Users\\DELL\\git\\Modelling2014OfirVersion\\Take2\\NuSMVParser\\SMVParser.py", smvFilePath).start();
@@ -65,26 +59,8 @@ public class Launch implements ILaunchConfigurationDelegate{
 			}
 			in.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//dot.exe filename -Tjpg -o f:\aa.jpg
-		
-		/*try {
-			Process p = new ProcessBuilder("dot.exe", "F:\\graph.dot","-o","F:\\aab.jpg","-Tjpg").start();
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			BufferedWriter out = new BufferedWriter(new FileWriter("f:\\zzz.txt"));
-			String line;
-			while ((line = in.readLine()) != null) {
-			    out.write(line+'\n');
-			}
-			out.close();
-			in.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
 		
 		Display.getDefault().asyncExec(new Runnable() {
 		    @Override
@@ -101,48 +77,59 @@ public class Launch implements ILaunchConfigurationDelegate{
 		    }
 		});
 
-		/*try {
-			String command = "cmd /c start cmd.exe /k nusmv.exe \"C:\\runtime-EclipseApplication\\Ofir\\src-gen\\main.smv\"";
-			Process proc = Runtime.getRuntime().exec(command);
-			BufferedReader stdInput = new BufferedReader(new 
-					InputStreamReader(proc.getInputStream()));
-
-			BufferedReader stdError = new BufferedReader(new 
-		             InputStreamReader(proc.getErrorStream()));
-
-			
-			// read the output from the command
-			System.out.println("Here is the standard output of the command:\n");
-			String s = null;
-			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
-			}
-			
-
-	        // read any errors from the attempted command
-	        System.out.println("Here is the standard error of the command (if any):\n");
-	        while ((s = stdError.readLine()) != null) {
-	            System.out.println(s);
-	        }
-			
+	}
+	
+	/**
+	 * Finds the first occurrence of the file with the given name. The search begins in the given startPath.
+	 * @param startPath The start path to search from
+	 * @param fileName The name of the file we are searching
+	 * @return A path to the file with the given name.
+	 */
+	private String findFilePath(Path startPath, String fileName){
+		FileFinder finder = new FileFinder(fileName);
+        try {
+			Files.walkFileTree(startPath, finder);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Failed to walk file tree: "+startPath.toString());
 			e.printStackTrace();
-		}*/
+		} 
+		return finder.getPath();
 	}
 
+	/**
+	 *	An auxiliary class for the findFilePath method.
+	 *	This class holds the name of the file we want to find. 
+	 */
 	private static class FileFinder extends SimpleFileVisitor<Path>{ 
 	    
-		private String path = null;
+		//the path to the file.
+		private String path;
+		//the name of the searched file.
+		private String fileName;
 		
+		/**
+		 * Ctor.
+		 * @param fileName the name of the search file
+		 */
+		public FileFinder(String fileName){
+			this.fileName = fileName;
+			path = null;
+		}
+		
+		/**
+		 * @return The path of the file, otherwise null if not found.
+		 */
 		public String getPath(){
 			return path;
 		}
 		
+		/**
+		 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
+		 */
 		@Override
 	    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 	        throws IOException {
-	        if(file.toString().endsWith(".smv")){
+	        if(file.toString().endsWith(fileName)){
 	        	path = file.toString();
 	        	return FileVisitResult.TERMINATE;
 	        }
