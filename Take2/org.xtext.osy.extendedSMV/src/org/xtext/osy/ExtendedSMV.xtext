@@ -295,7 +295,7 @@ LTLSpecification:
 ;
 
 CTLSpecification:
-	'CTLSPEC' ((expression=CTLExpression ('&' pattern=PATTERN)?) | pattern=PATTERN) ';'?
+	'CTLSPEC' ((expression=CTLExpression ('&' patterns+=PATTERN)*) | (patterns+=PATTERN)+) ';'?
 ;
 
 CTLExpression returns Expression:

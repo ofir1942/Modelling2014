@@ -3,7 +3,13 @@
  */
 package org.xtext.osy.generator;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import javax.inject.Inject;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -16,11 +22,14 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 import org.xtext.osy.extendedSMV.Assignments;
+import org.xtext.osy.extendedSMV.Expression;
 import org.xtext.osy.extendedSMV.LTLSpecification;
 import org.xtext.osy.extendedSMV.Module;
+import org.xtext.osy.extendedSMV.PatternsDefinitions;
 import org.xtext.osy.extendedSMV.Section;
 import org.xtext.osy.extendedSMV.VariableDeclaration;
 
@@ -34,6 +43,8 @@ public class ExtendedSMVGenerator implements IGenerator {
   @Inject
   @Extension
   private IQualifiedNameProvider _iQualifiedNameProvider;
+  
+  private FileOutputStream out;
   
   public void doGenerate(final Resource resource, final IFileSystemAccess fsa) {
     TreeIterator<EObject> _allContents = resource.getAllContents();
@@ -71,7 +82,11 @@ public class ExtendedSMVGenerator implements IGenerator {
             String _plus_3 = (code + _CompileLTLSpec);
             code = _plus_3;
           } else {
-            code = (code + "Somethingelse1+\n");
+            if ((s instanceof PatternsDefinitions)) {
+              this.CompilePatterns(((PatternsDefinitions)s));
+            } else {
+              code = (code + "Somethingelse1+\n");
+            }
           }
         }
       }
@@ -79,10 +94,64 @@ public class ExtendedSMVGenerator implements IGenerator {
     return code;
   }
   
+  public void CompilePatterns(final PatternsDefinitions definitions) {
+    try {
+      ICompositeNode _node = NodeModelUtils.getNode(definitions);
+      String patterns = NodeModelUtils.getTokenText(_node);
+      String _replace = patterns.replace("PATTERNS", "");
+      patterns = _replace;
+      String _replace_1 = patterns.replace(";", ";\n");
+      patterns = _replace_1;
+      FileOutputStream _fileOutputStream = new FileOutputStream("c:/dev/temp/macros.txt");
+      FileOutputStream file = _fileOutputStream;
+      byte[] _bytes = patterns.getBytes(Charsets.UTF_8);
+      file.write(_bytes);
+      file.close();
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
+  }
+  
   public String CompileLTLSpec(final LTLSpecification specification) {
-    ICompositeNode _node = NodeModelUtils.getNode(specification);
-    String code = NodeModelUtils.getTokenText(_node);
+    String code = "LTLSPEC ";
+    Expression _expression = specification.getExpression();
+    boolean _notEquals = (!Objects.equal(_expression, null));
+    if (_notEquals) {
+      Expression _expression_1 = specification.getExpression();
+      ICompositeNode _node = NodeModelUtils.getNode(_expression_1);
+      String _tokenText = NodeModelUtils.getTokenText(_node);
+      String _plus = (code + _tokenText);
+      code = _plus;
+    }
+    EList<String> _patterns = specification.getPatterns();
+    for (final String p : _patterns) {
+      {
+        Expression _expression_2 = specification.getExpression();
+        boolean _notEquals_1 = (!Objects.equal(_expression_2, null));
+        if (_notEquals_1) {
+          code = (code + " & ");
+        }
+        String _TranslatePattern = this.TranslatePattern(p);
+        String _plus_1 = (code + _TranslatePattern);
+        code = _plus_1;
+      }
+    }
     return code;
+  }
+  
+  public String TranslatePattern(final String pattern) {
+    try {
+      Runtime _runtime = Runtime.getRuntime();
+      Process proc = _runtime.exec(("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py c:/dev/temp/macros.txt " + pattern));
+      InputStream _inputStream = proc.getInputStream();
+      InputStreamReader _inputStreamReader = new InputStreamReader(_inputStream);
+      InputStreamReader stream = _inputStreamReader;
+      BufferedReader _bufferedReader = new BufferedReader(stream);
+      BufferedReader reader = _bufferedReader;
+      return reader.readLine();
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
   }
   
   public String CompileAssignments(final Assignments assignments) {
