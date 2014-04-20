@@ -79,9 +79,9 @@ def main():
     
     macroDefinitionsFile = sys.argv[1]
     macroToParse = sys.argv[2]
-    with open("c:/dev/temp/test.txt.  ", "a") as myfile:
-        myfile.write( 'num args: %d.  ' % len(sys.argv) )
-        myfile.write("macroDefinitionsFile: %s; macroToParse:  %s\n" %( macroDefinitionsFile, macroToParse ))
+    #with open("c:/dev/temp/test.txt.  ", "a") as myfile:
+     #   myfile.write( 'num args: %d.  ' % len(sys.argv) )
+      #  myfile.write("macroDefinitionsFile: %s; macroToParse:  %s\n" %( macroDefinitionsFile, macroToParse ))
 #     macroDefinitionsFile = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\macrodefinitions.txt"
 #     macroToParse = "request before status=busy"
     
