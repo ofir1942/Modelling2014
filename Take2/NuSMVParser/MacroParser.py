@@ -16,13 +16,14 @@ class Macro(object):
             if matches is None:
                 continue
             
+            #else:
             matches             = matches.groups()
             variables           = []
             for varIdx in range( numParams ):
                 variables.append( matches[ varIdx ].strip() )
 
-            macroRule           = matches[ numParams     ].strip()
-            macroInterpretation = matches[ numParams + 1 ].strip()
+            macroRule           = matches[ numParams     ].strip() #right hand of "=>"
+            macroInterpretation = matches[ numParams + 1 ].strip() #left hand of "=>"
             
             for varIdx in range( numParams ):
                 macroRule           = macroRule.replace( variables[ varIdx ] , '(.*)' )
@@ -54,7 +55,6 @@ class Macro(object):
     
 
 class MacroParser(object):
-    
     def __init__(self, macroDefinitionsFilePath ):
         with file( macroDefinitionsFilePath ) as macroDefinitionsFile :
             macroDefinitions = macroDefinitionsFile.readlines()
@@ -64,29 +64,20 @@ class MacroParser(object):
             self.allMacros.append( Macro( singleMacroLine ))
 
     
-    def Parse(self, macroToParse):
+    def Parse(self, patternToParse):
         for macro in self.allMacros:
-            if macro.Match( macroToParse ):
-                return macro.Parse( macroToParse ).replace('[]','G ').replace('<>', 'F ')
-            
-        return "IVALID MACRO"
-    
-    
+            if macro.Match( patternToParse ):
+                return macro.Parse( patternToParse ).replace('[]','G ') \
+                                                    .replace('<>', 'F ')
 
-
-def main():
-    #filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\out.txt"
+        #if no matching macro:            
+        return "IVALID PATTERN"
     
+def main():    
     macroDefinitionsFile = sys.argv[1]
-    macroToParse = sys.argv[2]
-    #with open("c:/dev/temp/test.txt.  ", "a") as myfile:
-     #   myfile.write( 'num args: %d.  ' % len(sys.argv) )
-      #  myfile.write("macroDefinitionsFile: %s; macroToParse:  %s\n" %( macroDefinitionsFile, macroToParse ))
-#     macroDefinitionsFile = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\macrodefinitions.txt"
-#     macroToParse = "request before status=busy"
-    
-    macroParser = MacroParser( macroDefinitionsFile )
-    print( macroParser.Parse( macroToParse ) )
+    patternToParse       = sys.argv[2]
+    macroParser          = MacroParser( macroDefinitionsFile )
+    print( macroParser.Parse( patternToParse ) )
     
 if __name__ == '__main__':
     main()

@@ -49,7 +49,6 @@ class SMVParser(object):
         
         return 0
 
-    
     def GenerateDOTNodes(self, statesText, loopStartStateIdx):
         dotNodes = []
         for stateText in statesText:
@@ -69,6 +68,7 @@ class SMVParser(object):
             dotText = 'digraph G  { rankdir=LR label="SPECIFICATION %s ==> is TRUE"\n' % LTLSpec
         else:
             dotText = 'digraph G  { rankdir=LR label="SPECIFICATION %s ==> is FALSE"\n' % LTLSpec
+            
         for stateNode in stateDOTNodes:
             dotText += stateNode.stateDOTText + "\n"
             
@@ -80,7 +80,6 @@ class SMVParser(object):
         
         return dotText
     
-
     def ExtractLTLSpec(self, specification):
         specification = SPECIFICATION_HEADER + specification
         specMatch     = re.compile( r'-- specification (.+) is (.+)' ).match( specification )
@@ -88,17 +87,13 @@ class SMVParser(object):
         result        = ( specMatch.groups()[1] == 'true' )
         return LTLSpec, result
 
-    
-
-    
-    
     def ParseCounterExamples(self):
         specsText      = self.smvOutput.split( SPECIFICATION_HEADER )
         specsText      = specsText[ 1: ]
         
         idx = 0
         for specification in specsText:
-            idx            += 1
+            idx               += 1
             LTLSpec, LTLResult = self.ExtractLTLSpec( specification )
             
             stateDOTNodes = []
@@ -107,10 +102,10 @@ class SMVParser(object):
                 loopStartStateIdx = self.FindLoopStart( statesText )
                 stateDOTNodes     = self.GenerateDOTNodes( statesText, loopStartStateIdx )
                 
-            dotText           = self.GenerateDOTText( stateDOTNodes, LTLSpec, LTLResult )
-            
+            dotText        = self.GenerateDOTText( stateDOTNodes, LTLSpec, LTLResult )
             dotFilePath    = "graph%d.dot" % ++idx
             graphImagePath = "graph%d.jpg" % idx
+            
             with file( dotFilePath, 'w' ) as dotFile:
                 dotFile.write( dotText )
                 
@@ -130,11 +125,9 @@ def RunNuSMV( smvFilePath ):
     return smvOutput
 
 def main():
-    #filePath = r"C:\Users\Ofir\Documents\tau\winter-14\project\Modelling2014\Take2\NuSMVParser\out.txt"
-	
     smvFilePath = sys.argv[1]
-    smvOutput = RunNuSMV( smvFilePath )
-    smvParser = SMVParser( smvOutput )
+    smvOutput   = RunNuSMV ( smvFilePath )
+    smvParser   = SMVParser( smvOutput )
     smvParser.ParseCounterExamples()
     
 if __name__ == '__main__':
