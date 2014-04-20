@@ -9,21 +9,15 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 import org.xtext.osy.extendedSMV.Module
 import javax.inject.Inject
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.xtext.osy.extendedSMV.Section
 import org.xtext.osy.extendedSMV.VariableDeclaration
 import org.xtext.osy.extendedSMV.Assignments
 import org.xtext.osy.extendedSMV.LTLSpecification
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.xtext.osy.extendedSMV.PatternsDefinitions
-import java.io.BufferedWriter
 import java.io.FileOutputStream
-import java.io.PrintWriter
-import java.nio.file.Files
 import com.google.common.base.Charsets
-import java.nio.charset.Charset
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import org.eclipse.xtext.parser.packrat.matching.CharacterArray
 import org.xtext.osy.launch.Launch
 
 /**
@@ -35,30 +29,21 @@ import org.xtext.osy.launch.Launch
 class ExtendedSMVGenerator implements IGenerator {
 	@Inject extension IQualifiedNameProvider
 	
-	FileOutputStream out
-	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
 		for(e: resource.allContents.toIterable.filter(Module)) {
 			var filePath = e.fullyQualifiedName.toString("/") + ".smv"
 			
 		 	fsa.generateFile( filePath,
 	      					  e.compile)
-	 		//Runtime.runtime.exec("C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/CounterExampleViewer/CounterExampleViewer/Launcher/bin/Debug/Launcher.exe ")
-	 		
 	 	}
-	 	
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(typeof(Greeting))
-//				.map[name]
-//				.join(', '))
 	}
 	
+	/**
+	 * Xtend function to compile esmv MODULE
+	 */
 	def compile( Module m )
 	{
-		 
 		var code = "MODULE " + m.name + "\n"
-		//code = code + NodeModelUtils.getTokenText(NodeModelUtils.getNode(m))
 		for( s: m.sections ) {
 			if( s instanceof Assignments ){
 				code = code + CompileAssignments( s )
@@ -73,13 +58,15 @@ class ExtendedSMVGenerator implements IGenerator {
 				CompilePatterns( s )
 			}
 			else  {
-				code = code + "Somethingelse1+\n"
+				code = code + "UNKNOWN SECTION\n"
 			}
 		} 
-		
 		return code
 	}
 	
+	/*
+	 * Compile and save newly defined patterns
+	 */
 	def CompilePatterns(PatternsDefinitions definitions) {
 		var patterns = NodeModelUtils.getTokenText(NodeModelUtils.getNode(definitions))
 		patterns = patterns.replace( "PATTERNS", "")
@@ -90,6 +77,9 @@ class ExtendedSMVGenerator implements IGenerator {
 		file.close()	
 	}
 
+	/*
+	 * Compile LTL specifications. Replcae "XXX" with the relevant pattern  
+	 */
 	def CompileLTLSpec(LTLSpecification specification) {
 		var code = 'LTLSPEC '
 		
@@ -104,162 +94,45 @@ class ExtendedSMVGenerator implements IGenerator {
 				code = code + ' & '
 			} 
 			
-			//var patternString = NodeModelUtils.getTokenText(NodeModelUtils.getNode( p ))
 			code = code + TranslatePattern( p )
-			
 		}
 		
-		//var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification))
 		return code 
-		//return "LTLSPEC " + specification.expression.expression + "\n"
 	}
 	
+	/*
+	 * Translate pattern into the relevant specification
+	 */
 	def TranslatePattern(String pattern) {
-		var s = class.protectionDomain.codeSource.location.file.substring(1) + "../"
-		var z = Launch.findFilePath(s, "MacroParser.py");
-		var proc = Runtime.runtime.exec("python.exe "+z+" ./macros.txt " + pattern)
-		//var proc = Runtime.runtime.exec("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py ./macros.txt " + pattern)
+		var pluginRootDir 	= class.protectionDomain.codeSource.location.file.substring(1) + "../"
+		var macroParserPath = Launch.findFilePath(pluginRootDir, "MacroParser.py");
+		var proc 			= Runtime.runtime.exec("python.exe "+ macroParserPath+" ./macros.txt " + pattern)
+	
 		var stream = new InputStreamReader(  proc.inputStream )
 		var reader = new BufferedReader(stream)
 		
 		return reader.readLine()
-//		//return stream.read( translatedPattern )
-//		 val char[100] translatedPattern  
-//		stream.read()
-////		
-//		var translatedPatternString = new String( translatedPattern )
-//		return translatedPatternString
 	}
 
+	/* 
+	 * Compile ASSIGN section
+	 */
 	def CompileAssignments( Assignments assignments) {
 		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(assignments))
 		code = code.replace( "ASSIGN", "ASSIGN\n")
 		code = code.replace( ";", ";\n")
 		
 		return code
-//		var code = "\nASSIGN\n"
-//		for( singleAssignment: assignments.assignments ){
-//			if( singleAssignment instanceof InitAssign ) {
-//				code = code + CompileInitAssignment( singleAssignment )
-//			}
-//			else if( singleAssignment instanceof NextAssign ) {
-//				
-//				code = code + CompileNextAssignment( singleAssignment )
-//			}
-//			else { code = code + "weird!!"}
-//		}
-//		
-//		return code
 	}
 
-//	def CompileNextAssignment( NextAssign assignment )
-//	{
-//		var code = "next( " + assignment.varName.name + ") := "
-//		code = code + CompileCaseAssignment( assignment.nextStatement )
-//		return code
-//	}
-	
-//	def CompileCaseAssignment(CaseAssign assign) {
-//		var tabPrefix = "\t\t"
-//		var code = "case\n" 
-//		for( caseLiteral: assign.caseLiterals ) {
-//			code = code + tabPrefix + CompileCaseCondition( caseLiteral.condition ) + ' : ' + CompileCaseNextLiteral( caseLiteral.nextValue ) + ';\n'
-//		}
-//		
-//		return code + tabPrefix + "esac;\n"
-//	}
-
-//	def CompileCaseNextLiteral(CaseNextLiteral literal) {
-//		if( literal instanceof SingleState )
-//			return SingleStateName( literal )
-//		else if( literal instanceof StateList )
-//			return StateListString( literal )
-//	}
-
-//	def StateListString(StateList list) {
-//		var states = list.states.join( ',')	
-//		return  '{' + states + '}' 
-//	}
-//
-//	def SingleStateName(SingleState singleState) {
-//		return singleState.state
-//	}
-
-//	def CompileCaseCondition(CaseCondition condition) {
-//		if( condition instanceof DefaultCondition )
-//			return "TRUE"
-//		else if( condition instanceof BooleanVar)
-//			return BoolVarName( condition )
-//	}
-
-//	def BoolVarName(BooleanVar boolVar) {
-//		return boolVar.booleanVar.name
-//	}
-
-//	def CompileInitAssignment(InitAssign assignment) {
-//		var code = ""
-//		
-//		if( assignment instanceof BooleanInit ) {
-//			code = code + CompileBoolInitAssignment( assignment )
-//		}
-//		if( assignment instanceof StateInit ) {
-//			code = code + CompileStateInitAssignment( assignment )
-//		}
-//		return code
-//	}
-
-//	def CompileStateInitAssignment(StateInit stateInit) {
-//		return "\tinit(" + stateInit.varName.name + ') := ' + stateInit.value + ";\n"
-//	}
-//
-//	def CompileBoolInitAssignment(BooleanInit boolInit) {
-//		return "\tinit( " + boolInit.varName.name + ') := ' + boolInit.value + ";\n"
-//	}
-//	
+	/* 
+	 * Compile VAR section
+	 */
 	def CompileVariables( VariableDeclaration varsSection) {
 		var code = NodeModelUtils.getTokenText(NodeModelUtils.getNode(varsSection))
 		code = code.replace( "VAR", "VAR\n")
 		code = code.replace( ";", ";\n")
 		
 		return code
-		
-//		var code = "\nVAR\n"
-//		for( v: varsSection.variables ) {
-//			if( v instanceof BooleanDeclarion )
-//			{
-//				code = code + "\t" + v.name + ':' + "boolean ;\n"
-//			}
-//			else if( v instanceof StateVariableDeclaration ) {
-//				code = code + CompileStateVarDeclaration( v )
-//			}
-//			else {
-//				code = code + "Something is wrong\n"
-//			}
-//		}
-		
-//		code = code + "\n"
-//		return code
 	}
-	
-//	def CompileStateVarDeclaration( StateVariableDeclaration stateVarDeclaration ){
-//		var states = stateVarDeclaration.possibleStates.states.join( ',')	
-//		return "\t" + stateVarDeclaration.name + ':' + '{' + states + '} ;' 
-//	}
-//	
-//	def compile(Module m) '''
-//	  	MODULE «m.name»
-//	  	«FOR s:m.sections»
-//      		«s.compile»
-//		«ENDFOR»
-//	'''
-//	
-	def compile(Section s) '''
-		«s.fullyQualifiedName» h
-//	'''
-//
-//	
-//	def compileAssignments(Assignments s) '''
-//		AssSection
-//	'''
-
 }
