@@ -115,7 +115,7 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 	
 	def TranslatePattern(String pattern) {
-		var s = class.protectionDomain.codeSource.location.file + "../"
+		var s = class.protectionDomain.codeSource.location.file.substring(1) + "../"
 		var z = Launch.findFilePath(s, "MacroParser.py");
 		var proc = Runtime.runtime.exec("python.exe "+z+" ./macros.txt " + pattern)
 		//var proc = Runtime.runtime.exec("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py ./macros.txt " + pattern)

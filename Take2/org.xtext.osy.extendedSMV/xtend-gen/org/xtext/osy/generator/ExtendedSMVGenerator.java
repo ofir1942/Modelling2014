@@ -150,7 +150,8 @@ public class ExtendedSMVGenerator implements IGenerator {
       CodeSource _codeSource = _protectionDomain.getCodeSource();
       URL _location = _codeSource.getLocation();
       String _file = _location.getFile();
-      String s = (_file + "../");
+      String _substring = _file.substring(1);
+      String s = (_substring + "../");
       String z = Launch.findFilePath(s, "MacroParser.py");
       Runtime _runtime = Runtime.getRuntime();
       Process proc = _runtime.exec(((("python.exe " + z) + " ./macros.txt ") + pattern));
