@@ -41,21 +41,19 @@ public class Launch implements ILaunchConfigurationDelegate{
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
-		//get object which represents the workspace  			  
-		String workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
+		
+		//Get the workspace of our plug-in and find the ESMV project
+		String pluginWorkspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
 		String projectName = configuration.getAttribute("org.eclipse.jdt.launching.PROJECT_ATTR", "");
-		String smvStartPath = workspaceLocation+"\\"+projectName;
+		String smvStartPath = pluginWorkspaceLocation+"\\"+projectName;
 		String fileName = ".smv";
 		String smvFilePath = findFilePath(smvStartPath, fileName);
 		
-		String currentClass = getClass().getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)+"../";
+		//Get the current workspace in order to run Python script which will process and execute NuSMV
+		String workspaceLocation = getClass().getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)+"../"; //the substring is for eliminating preceding '/' and the '..' is for finding workspace
 		String pythonFileName = "SMVParser.py";
-		String pythonFileNamePath = findFilePath(currentClass , pythonFileName);
+		String pythonFileNamePath = findFilePath(workspaceLocation , pythonFileName);
 		
-		System.out.println("zzzz: "+pythonFileNamePath);
-		
-		
-
 		final ArrayList<String> specs = new ArrayList<String>();
 		try {
 			Process p = new ProcessBuilder("python.exe", pythonFileNamePath, smvFilePath).start();
@@ -68,12 +66,12 @@ public class Launch implements ILaunchConfigurationDelegate{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		//Display the output of the NuSMV in user friendly way 
 		Display.getDefault().asyncExec(new Runnable() {
 		    @Override
 		    public void run() {		    	
 		    	try {
-		    		//This will show (if its not already shown) our counter example view.
+		    		//This will show (if its not already shown) our counter example view
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.xtext.osy.views.CounterExampleView");
 				} catch (PartInitException e) {
 					e.printStackTrace();
@@ -88,7 +86,7 @@ public class Launch implements ILaunchConfigurationDelegate{
 	
 	/**
 	 * Finds the first occurrence of the file with the given name. The search begins in the given startPath.
-	 * @param startPath The start path to search from
+	 * @param startPathString The start path to search from
 	 * @param fileName The name of the file we are searching
 	 * @return A path to the file with the given name.
 	 */
