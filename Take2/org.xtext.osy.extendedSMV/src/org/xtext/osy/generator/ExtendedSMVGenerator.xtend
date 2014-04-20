@@ -24,6 +24,7 @@ import java.nio.charset.Charset
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import org.eclipse.xtext.parser.packrat.matching.CharacterArray
+import org.xtext.osy.launch.Launch
 
 /**
  * Generates code from your model files on save.
@@ -84,7 +85,7 @@ class ExtendedSMVGenerator implements IGenerator {
 		patterns = patterns.replace( "PATTERNS", "")
 		patterns = patterns.replace( ";", ";\n")
 		
-		var file = new FileOutputStream(  'c:/dev/temp/macros.txt')
+		var file = new FileOutputStream(  './macros.txt')
 		file.write( patterns.getBytes( Charsets.UTF_8 ) )
 		file.close()	
 	}
@@ -114,7 +115,10 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 	
 	def TranslatePattern(String pattern) {
-		var proc = Runtime.runtime.exec("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py c:/dev/temp/macros.txt " + pattern)
+		var s = class.protectionDomain.codeSource.location.file + "../"
+		var z = Launch.findFilePath(s, "MacroParser.py");
+		var proc = Runtime.runtime.exec("python.exe "+z+" ./macros.txt " + pattern)
+		//var proc = Runtime.runtime.exec("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py ./macros.txt " + pattern)
 		var stream = new InputStreamReader(  proc.inputStream )
 		var reader = new BufferedReader(stream)
 		

@@ -10,6 +10,9 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import javax.inject.Inject;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -32,6 +35,7 @@ import org.xtext.osy.extendedSMV.Module;
 import org.xtext.osy.extendedSMV.PatternsDefinitions;
 import org.xtext.osy.extendedSMV.Section;
 import org.xtext.osy.extendedSMV.VariableDeclaration;
+import org.xtext.osy.launch.Launch;
 
 /**
  * Generates code from your model files on save.
@@ -102,7 +106,7 @@ public class ExtendedSMVGenerator implements IGenerator {
       patterns = _replace;
       String _replace_1 = patterns.replace(";", ";\n");
       patterns = _replace_1;
-      FileOutputStream _fileOutputStream = new FileOutputStream("c:/dev/temp/macros.txt");
+      FileOutputStream _fileOutputStream = new FileOutputStream("./macros.txt");
       FileOutputStream file = _fileOutputStream;
       byte[] _bytes = patterns.getBytes(Charsets.UTF_8);
       file.write(_bytes);
@@ -141,8 +145,15 @@ public class ExtendedSMVGenerator implements IGenerator {
   
   public String TranslatePattern(final String pattern) {
     try {
+      Class<? extends ExtendedSMVGenerator> _class = this.getClass();
+      ProtectionDomain _protectionDomain = _class.getProtectionDomain();
+      CodeSource _codeSource = _protectionDomain.getCodeSource();
+      URL _location = _codeSource.getLocation();
+      String _file = _location.getFile();
+      String s = (_file + "../");
+      String z = Launch.findFilePath(s, "MacroParser.py");
       Runtime _runtime = Runtime.getRuntime();
-      Process proc = _runtime.exec(("python.exe C:/Users/Ofir/Documents/tau/winter-14/project/Modelling2014/Take2/NuSMVParser/MacroParser.py c:/dev/temp/macros.txt " + pattern));
+      Process proc = _runtime.exec(((("python.exe " + z) + " ./macros.txt ") + pattern));
       InputStream _inputStream = proc.getInputStream();
       InputStreamReader _inputStreamReader = new InputStreamReader(_inputStream);
       InputStreamReader stream = _inputStreamReader;

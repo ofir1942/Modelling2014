@@ -44,14 +44,21 @@ public class Launch implements ILaunchConfigurationDelegate{
 		//get object which represents the workspace  			  
 		String workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
 		String projectName = configuration.getAttribute("org.eclipse.jdt.launching.PROJECT_ATTR", "");
-		Path smvStartPath = Paths.get(workspaceLocation+"\\"+projectName);
+		String smvStartPath = workspaceLocation+"\\"+projectName;
 		String fileName = ".smv";
 		String smvFilePath = findFilePath(smvStartPath, fileName);
+		
+		String currentClass = getClass().getProtectionDomain().getCodeSource().getLocation().getFile().substring(1)+"../";
+		String pythonFileName = "SMVParser.py";
+		String pythonFileNamePath = findFilePath(currentClass , pythonFileName);
+		
+		System.out.println("zzzz: "+pythonFileNamePath);
+		
 		
 
 		final ArrayList<String> specs = new ArrayList<String>();
 		try {
-			Process p = new ProcessBuilder("python.exe", "C:\\Users\\DELL\\git\\Modelling2014OfirVersion\\Take2\\NuSMVParser\\SMVParser.py", smvFilePath).start();
+			Process p = new ProcessBuilder("python.exe", pythonFileNamePath, smvFilePath).start();
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = in.readLine()) != null) {
@@ -85,7 +92,8 @@ public class Launch implements ILaunchConfigurationDelegate{
 	 * @param fileName The name of the file we are searching
 	 * @return A path to the file with the given name.
 	 */
-	private String findFilePath(Path startPath, String fileName){
+	public static String findFilePath(String startPathString, String fileName){
+		Path startPath = Paths.get(startPathString);
 		FileFinder finder = new FileFinder(fileName);
         try {
 			Files.walkFileTree(startPath, finder);
