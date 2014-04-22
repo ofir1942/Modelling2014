@@ -18,7 +18,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -48,8 +47,6 @@ public class ExtendedSMVGenerator implements IGenerator {
   @Extension
   private IQualifiedNameProvider _iQualifiedNameProvider;
   
-  private FileOutputStream out;
-  
   public void doGenerate(final Resource resource, final IFileSystemAccess fsa) {
     TreeIterator<EObject> _allContents = resource.getAllContents();
     Iterable<EObject> _iterable = IteratorExtensions.<EObject>toIterable(_allContents);
@@ -65,6 +62,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     }
   }
   
+  /**
+   * Xtend function to compile esmv MODULE
+   */
   public String compile(final Module m) {
     String _name = m.getName();
     String _plus = ("MODULE " + _name);
@@ -89,7 +89,7 @@ public class ExtendedSMVGenerator implements IGenerator {
             if ((s instanceof PatternsDefinitions)) {
               this.CompilePatterns(((PatternsDefinitions)s));
             } else {
-              code = (code + "Somethingelse1+\n");
+              code = (code + "UNKNOWN SECTION\n");
             }
           }
         }
@@ -98,6 +98,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     return code;
   }
   
+  /**
+   * Compile and save newly defined patterns
+   */
   public void CompilePatterns(final PatternsDefinitions definitions) {
     try {
       ICompositeNode _node = NodeModelUtils.getNode(definitions);
@@ -116,6 +119,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     }
   }
   
+  /**
+   * Compile LTL specifications. Replcae "XXX" with the relevant pattern
+   */
   public String CompileLTLSpec(final LTLSpecification specification) {
     String code = "LTLSPEC ";
     Expression _expression = specification.getExpression();
@@ -143,6 +149,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     return code;
   }
   
+  /**
+   * Translate pattern into the relevant specification
+   */
   public String TranslatePattern(final String pattern) {
     try {
       Class<? extends ExtendedSMVGenerator> _class = this.getClass();
@@ -151,10 +160,10 @@ public class ExtendedSMVGenerator implements IGenerator {
       URL _location = _codeSource.getLocation();
       String _file = _location.getFile();
       String _substring = _file.substring(1);
-      String s = (_substring + "../");
-      String z = Launch.findFilePath(s, "MacroParser.py");
+      String pluginRootDir = (_substring + "../");
+      String macroParserPath = Launch.findFilePath(pluginRootDir, "MacroParser.py");
       Runtime _runtime = Runtime.getRuntime();
-      Process proc = _runtime.exec(((("python.exe " + z) + " ./macros.txt ") + pattern));
+      Process proc = _runtime.exec(((("python.exe " + macroParserPath) + " ./macros.txt ") + pattern));
       InputStream _inputStream = proc.getInputStream();
       InputStreamReader _inputStreamReader = new InputStreamReader(_inputStream);
       InputStreamReader stream = _inputStreamReader;
@@ -166,6 +175,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     }
   }
   
+  /**
+   * Compile ASSIGN section
+   */
   public String CompileAssignments(final Assignments assignments) {
     ICompositeNode _node = NodeModelUtils.getNode(assignments);
     String code = NodeModelUtils.getTokenText(_node);
@@ -176,6 +188,9 @@ public class ExtendedSMVGenerator implements IGenerator {
     return code;
   }
   
+  /**
+   * Compile VAR section
+   */
   public String CompileVariables(final VariableDeclaration varsSection) {
     ICompositeNode _node = NodeModelUtils.getNode(varsSection);
     String code = NodeModelUtils.getTokenText(_node);
@@ -184,15 +199,5 @@ public class ExtendedSMVGenerator implements IGenerator {
     String _replace_1 = code.replace(";", ";\n");
     code = _replace_1;
     return code;
-  }
-  
-  public CharSequence compile(final Section s) {
-    StringConcatenation _builder = new StringConcatenation();
-    QualifiedName _fullyQualifiedName = this._iQualifiedNameProvider.getFullyQualifiedName(s);
-    _builder.append(_fullyQualifiedName, "");
-    _builder.append(" h");
-    _builder.newLineIfNotEmpty();
-    _builder.append("//\t");
-    return _builder;
   }
 }
