@@ -28,6 +28,7 @@ import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 import org.xtext.osy.extendedSMV.Assignments;
+import org.xtext.osy.extendedSMV.CTLSpecification;
 import org.xtext.osy.extendedSMV.Expression;
 import org.xtext.osy.extendedSMV.LTLSpecification;
 import org.xtext.osy.extendedSMV.Module;
@@ -86,10 +87,16 @@ public class ExtendedSMVGenerator implements IGenerator {
             String _plus_3 = (code + _CompileLTLSpec);
             code = _plus_3;
           } else {
-            if ((s instanceof PatternsDefinitions)) {
-              this.CompilePatterns(((PatternsDefinitions)s));
+            if ((s instanceof CTLSpecification)) {
+              String _CompileCTLSpec = this.CompileCTLSpec(((CTLSpecification)s));
+              String _plus_4 = (code + _CompileCTLSpec);
+              code = _plus_4;
             } else {
-              code = (code + "UNKNOWN SECTION\n");
+              if ((s instanceof PatternsDefinitions)) {
+                this.CompilePatterns(((PatternsDefinitions)s));
+              } else {
+                code = (code + "UNKNOWN SECTION\n");
+              }
             }
           }
         }
@@ -120,10 +127,40 @@ public class ExtendedSMVGenerator implements IGenerator {
   }
   
   /**
-   * Compile LTL specifications. Replcae "XXX" with the relevant pattern
+   * Compile LTL specifications. Replace "XXX" with the relevant pattern
    */
   public String CompileLTLSpec(final LTLSpecification specification) {
     String code = "LTLSPEC ";
+    Expression _expression = specification.getExpression();
+    boolean _notEquals = (!Objects.equal(_expression, null));
+    if (_notEquals) {
+      Expression _expression_1 = specification.getExpression();
+      ICompositeNode _node = NodeModelUtils.getNode(_expression_1);
+      String _tokenText = NodeModelUtils.getTokenText(_node);
+      String _plus = (code + _tokenText);
+      code = _plus;
+    }
+    EList<String> _patterns = specification.getPatterns();
+    for (final String p : _patterns) {
+      {
+        Expression _expression_2 = specification.getExpression();
+        boolean _notEquals_1 = (!Objects.equal(_expression_2, null));
+        if (_notEquals_1) {
+          code = (code + " & ");
+        }
+        String _TranslatePattern = this.TranslatePattern(p);
+        String _plus_1 = (code + _TranslatePattern);
+        code = _plus_1;
+      }
+    }
+    return code;
+  }
+  
+  /**
+   * Compile CTL specifications. Replace "XXX" with the relevant pattern
+   */
+  public String CompileCTLSpec(final CTLSpecification specification) {
+    String code = "CTLSPEC ";
     Expression _expression = specification.getExpression();
     boolean _notEquals = (!Objects.equal(_expression, null));
     if (_notEquals) {

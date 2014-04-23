@@ -19,6 +19,7 @@ import com.google.common.base.Charsets
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import org.xtext.osy.launch.Launch
+import org.xtext.osy.extendedSMV.CTLSpecification
 
 /**
  * Generates code from your model files on save.
@@ -54,6 +55,9 @@ class ExtendedSMVGenerator implements IGenerator {
 			else if( s instanceof LTLSpecification ) {
 				code = code + CompileLTLSpec( s )
 			}
+			else if( s instanceof CTLSpecification ) {
+				code = code + CompileCTLSpec( s )
+			}
 			else if( s instanceof PatternsDefinitions ) {
 				CompilePatterns( s )
 			}
@@ -78,10 +82,33 @@ class ExtendedSMVGenerator implements IGenerator {
 	}
 
 	/*
-	 * Compile LTL specifications. Replcae "XXX" with the relevant pattern  
+	 * Compile LTL specifications. Replace "XXX" with the relevant pattern  
 	 */
 	def CompileLTLSpec(LTLSpecification specification) {
 		var code = 'LTLSPEC '
+		
+		if( specification.expression != null )
+		{
+			code = code + NodeModelUtils.getTokenText(NodeModelUtils.getNode(specification.expression ))
+		}
+		
+		for( p: specification.patterns ) {
+			if( specification.expression != null )
+			{	
+				code = code + ' & '
+			} 
+			
+			code = code + TranslatePattern( p )
+		}
+		
+		return code 
+	}
+	
+	/*
+	 * Compile CTL specifications. Replace "XXX" with the relevant pattern  
+	 */
+	def CompileCTLSpec(CTLSpecification specification) {
+		var code = 'CTLSPEC '
 		
 		if( specification.expression != null )
 		{
