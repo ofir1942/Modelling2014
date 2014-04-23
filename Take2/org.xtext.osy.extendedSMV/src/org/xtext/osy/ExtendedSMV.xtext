@@ -1,17 +1,37 @@
+/*
+ * This .xtext file defines the grammar of the plugin.
+ * Using XText, this grammar enables the user to get the functionality 
+ * of full-editor with color coding, auto-formatting and quick fixes.
+ */
+ 
+/*
+ * import terminals
+ */
 grammar org.xtext.osy.ExtendedSMV with org.eclipse.xtext.common.Terminals
+
+/*
+ * import basic types
+ */
 
 import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
 
 generate extendedSMV "http://www.xtext.org/osy/ExtendedSMV"
 
+/*
+ * Model is the base of every .xtext file, this is the root of the tree
+ * In NuSMV, every model can include some modules,
+ * No imports, as in NuSMV
+ */
 Model:
 	(modules += Module)*
 ;
 
+/*
+ * module declaration
+ * with parameters that the module gets as input 
+ */
 Module:
-	'MODULE' name=IDENTIFIER
-	// @YE: the params' expression is included in parentheses with question mark,
-	// because parameter list may be empty like in this example: Module A()  
+	'MODULE' name=IDENTIFIER  
 	('(' ((params += Parameter) (',' params += Parameter)*)? ')')?
 	(sections += Section)*
 ;
@@ -20,13 +40,19 @@ Parameter:
 	name = IDENTIFIER
 ;
 
+/*
+ * this terminal purpose is to include more characters than ID,
+ * and therefore enables more identifiers 
+ */
 terminal IDENTIFIER:
-	//IDENTIFIER_FIRST_CHARACTER | Identifier IdentifierConsecutiveCharacter
 	(('a' .. 'z') |( 'A' .. 'Z') | '_') (('a' .. 'z') | ('A' .. 'Z') | '_' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' |'9' | '$' | '#' | '-')* 
 ;
 
 terminal SL_COMMENT : '--' !('\n'|'\r')* ('\r'? '\n')? ;
 
+/*
+ * A section is every sub part in a module
+ */
 Section:
 	VariableDeclaration | Assignments | DefineDeclaration | Constraints
 	| LTLSpecification | CTLSpecification | PatternsDefinitions
@@ -38,7 +64,6 @@ PatternsDefinitions:
 ;
 
 MacroDeclaration:
-//	name=ID '(' var1=ID ',' var2=ID ')' ':' macroPattern = STRING  '=>'  macroInterpretation = STRING  ';'
 	MacroDeclaration_1_var  | 
 	MacroDeclaration_2_vars | 
 	MacroDeclaration_3_vars 
@@ -56,6 +81,9 @@ MacroDeclaration_3_vars:
 	name=IDENTIFIER '(' var1=IDENTIFIER ',' var2=IDENTIFIER ',' var3=IDENTIFIER ')' ':' macroPattern = PATTERN  '=>'  macroInterpretation = PATTERN  ';'
 ;
 
+/*
+ * Define variables section
+ */
 VariableDeclaration:
   {VariableDeclaration}
   'VAR' (variables+=DeclaredVariable)*
@@ -65,11 +93,18 @@ DeclaredVariable returns Variable:
   name=IDENTIFIER ':' type=Type semicolon?=';'?
 ;
 
+/*
+ * Type can be also a model identifier, in case that it was declared 
+ */
 Type: 
   SimpleTypeSpecifier
   | ModuleTypeSpecifier 
 ;
 
+/*
+ * a module type can be one that was declared only, 
+ * no option for declaring a module inside type specifying.
+ */
 SimpleTypeSpecifier:
 	{BooleanType} 'boolean'
 	| {WordType} ('word' '[' wordINT=INT ']') 
@@ -118,11 +153,11 @@ SimpleExpression returns Expression:
 SetBodyExpression returns Expression:
   {SetBodyExpression}
   '{' expressions+=SimpleExpression (',' expressions+=SimpleExpression)* '}'
-  //'{' expressions+=IDENTIFIER (',' expressions+=IDENTIFIER)* '}'
 ;
 
-
-	
+/*
+ * Assign section 
+ */	
 Assignments:
 	{Assignments}
 	'ASSIGN'
@@ -143,6 +178,10 @@ InitAssign:
   'init' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)*  ')' ':=' expression=SimpleExpression semicolon?=';'?
 ;
 
+/*
+ * this rule could be "SimpleIdentifier", but this way enables the writer
+ * to extend the essence in future versions without harm other parts of the grammar. 
+ */
 NextAssign:
   'next' '(' id+=IDENTIFIER ('.' id+=IDENTIFIER)* ')' ':=' expression=NextExpression semicolon?=';'?
 ;
@@ -155,13 +194,19 @@ BOOL:
 	'TRUE' | 'FALSE'
 ;
 	
-
+/*
+ * A BasicExpression is one of the most basic stones of the grammar.
+ * it works in a manner such that it at first looks for a code that is suitable
+ * for Imply, the code that suitable for Equivalence, etc 
+ * (the order is derived from the order of the rules)
+ * 
+ */
 BasicExpression returns Expression:
   Implies;
 
 
 Implies returns Expression:
-  Equivalence ({BinaryExpression.left=current} feature=OpImplies right=Equivalence)*; // TODO: operator precedence
+  Equivalence ({BinaryExpression.left=current} feature=OpImplies right=Equivalence)*; 
   
 OpImplies:
  '->';
@@ -174,7 +219,7 @@ OpEquivalence:
  '<->';
   
 IfThenElse returns Expression:
-  Or ({IfThenElse.left=current}'?' then=Or ':' else=Or)? //TODO: not sure if OR!!!!!! maybe unaryEX
+  Or ({IfThenElse.left=current}'?' then=Or ':' else=Or)? 
 ;
   
 Or returns Expression:
@@ -355,9 +400,9 @@ SpecUnaryExpression returns Expression:
 ;
 
 OpSpecUnaryExpression:
-	'!' // Shared by Basic, LTL, CTL
-	|'X'|'G'|'F'|'Y'|'Z'|'H'|'O' // LTL
-	|'EG'|'EX'|'EF'|'AG'|'AX'|'AF' // CTL  	
+	'!' 
+	|'X'|'G'|'F'|'Y'|'Z'|'H'|'O' // Used by LTL specifications
+	|'EG'|'EX'|'EF'|'AG'|'AX'|'AF' // Used by CTL specifications  	
 ;
 
   
