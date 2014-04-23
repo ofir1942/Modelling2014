@@ -100,7 +100,7 @@ class ExtendedSMVGenerator implements IGenerator {
 			
 			code = code + TranslatePattern( p )
 		}
-		
+		code = code + '\n'
 		return code 
 	}
 	
@@ -123,7 +123,7 @@ class ExtendedSMVGenerator implements IGenerator {
 			
 			code = code + TranslatePattern( p )
 		}
-		
+		code = code + '\n'
 		return code 
 	}
 	

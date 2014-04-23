@@ -153,6 +153,7 @@ public class ExtendedSMVGenerator implements IGenerator {
         code = _plus_1;
       }
     }
+    code = (code + "\n");
     return code;
   }
   
@@ -183,6 +184,7 @@ public class ExtendedSMVGenerator implements IGenerator {
         code = _plus_1;
       }
     }
+    code = (code + "\n");
     return code;
   }
   
