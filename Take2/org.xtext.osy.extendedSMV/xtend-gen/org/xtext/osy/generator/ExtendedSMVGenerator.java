@@ -21,7 +21,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
-import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.lib.Exceptions;
@@ -32,6 +31,7 @@ import org.xtext.osy.extendedSMV.CTLSpecification;
 import org.xtext.osy.extendedSMV.Expression;
 import org.xtext.osy.extendedSMV.LTLSpecification;
 import org.xtext.osy.extendedSMV.Module;
+import org.xtext.osy.extendedSMV.Parameter;
 import org.xtext.osy.extendedSMV.PatternsDefinitions;
 import org.xtext.osy.extendedSMV.Section;
 import org.xtext.osy.extendedSMV.VariableDeclaration;
@@ -49,18 +49,16 @@ public class ExtendedSMVGenerator implements IGenerator {
   private IQualifiedNameProvider _iQualifiedNameProvider;
   
   public void doGenerate(final Resource resource, final IFileSystemAccess fsa) {
+    String allCode = "";
     TreeIterator<EObject> _allContents = resource.getAllContents();
     Iterable<EObject> _iterable = IteratorExtensions.<EObject>toIterable(_allContents);
     Iterable<Module> _filter = Iterables.<Module>filter(_iterable, Module.class);
     for (final Module e : _filter) {
-      {
-        QualifiedName _fullyQualifiedName = this._iQualifiedNameProvider.getFullyQualifiedName(e);
-        String _string = _fullyQualifiedName.toString("/");
-        String filePath = (_string + ".smv");
-        String _compile = this.compile(e);
-        fsa.generateFile(filePath, _compile);
-      }
+      String _compile = this.compile(e);
+      String _plus = ((allCode + "\n") + _compile);
+      allCode = _plus;
     }
+    fsa.generateFile("code.smv", allCode);
   }
   
   /**
@@ -69,33 +67,56 @@ public class ExtendedSMVGenerator implements IGenerator {
   public String compile(final Module m) {
     String _name = m.getName();
     String _plus = ("MODULE " + _name);
-    String code = (_plus + "\n");
+    String code = (_plus + "(");
+    boolean containsParams = false;
+    EList<Parameter> _params = m.getParams();
+    for (final Parameter p : _params) {
+      if ((p instanceof Parameter)) {
+        containsParams = true;
+        ICompositeNode _node = NodeModelUtils.getNode(p);
+        String _tokenText = NodeModelUtils.getTokenText(_node);
+        String _plus_1 = (code + _tokenText);
+        String _plus_2 = (_plus_1 + ",");
+        code = _plus_2;
+      }
+    }
+    if (containsParams) {
+      int _length = code.length();
+      int _minus = (_length - 1);
+      String _substring = code.substring(0, _minus);
+      code = _substring;
+    }
+    code = (code + ")\n");
     EList<Section> _sections = m.getSections();
     for (final Section s : _sections) {
       if ((s instanceof Assignments)) {
         String _CompileAssignments = this.CompileAssignments(((Assignments)s));
-        String _plus_1 = (code + _CompileAssignments);
-        code = _plus_1;
+        String _plus_3 = (code + _CompileAssignments);
+        code = _plus_3;
       } else {
         if ((s instanceof VariableDeclaration)) {
           String _CompileVariables = this.CompileVariables(((VariableDeclaration)s));
-          String _plus_2 = (code + _CompileVariables);
-          code = _plus_2;
+          String _plus_4 = (code + _CompileVariables);
+          code = _plus_4;
         } else {
           if ((s instanceof LTLSpecification)) {
             String _CompileLTLSpec = this.CompileLTLSpec(((LTLSpecification)s));
-            String _plus_3 = (code + _CompileLTLSpec);
-            code = _plus_3;
+            String _plus_5 = (code + _CompileLTLSpec);
+            code = _plus_5;
           } else {
             if ((s instanceof CTLSpecification)) {
               String _CompileCTLSpec = this.CompileCTLSpec(((CTLSpecification)s));
-              String _plus_4 = (code + _CompileCTLSpec);
-              code = _plus_4;
+              String _plus_6 = (code + _CompileCTLSpec);
+              code = _plus_6;
             } else {
               if ((s instanceof PatternsDefinitions)) {
                 this.CompilePatterns(((PatternsDefinitions)s));
               } else {
-                code = (code + "UNKNOWN SECTION\n");
+                ICompositeNode _node_1 = NodeModelUtils.getNode(s);
+                String _tokenText_1 = NodeModelUtils.getTokenText(_node_1);
+                String _plus_7 = ((code + "\n") + _tokenText_1);
+                String _plus_8 = (_plus_7 + "\n");
+                code = _plus_8;
               }
             }
           }

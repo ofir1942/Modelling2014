@@ -20,6 +20,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import org.xtext.osy.launch.Launch
 import org.xtext.osy.extendedSMV.CTLSpecification
+import org.xtext.osy.extendedSMV.Parameter
 
 /**
  * Generates code from your model files on save.
@@ -31,12 +32,15 @@ class ExtendedSMVGenerator implements IGenerator {
 	@Inject extension IQualifiedNameProvider
 	
 	override void doGenerate(Resource resource, IFileSystemAccess fsa) {
+		var allCode = ""
 		for(e: resource.allContents.toIterable.filter(Module)) {
-			var filePath = e.fullyQualifiedName.toString("/") + ".smv"
-			
-		 	fsa.generateFile( filePath,
-	      					  e.compile)
+			//var filePath = e.fullyQualifiedName.toString("/") + ".smv"
+			allCode = allCode + '\n' + e.compile
+		 	
 	 	}
+	 	
+	 	fsa.generateFile( "code.smv",
+	      					  allCode)
 	}
 	
 	/**
@@ -44,7 +48,18 @@ class ExtendedSMVGenerator implements IGenerator {
 	 */
 	def compile( Module m )
 	{
-		var code = "MODULE " + m.name + "\n"
+		var code = "MODULE " + m.name +"("
+		var containsParams = false // are there any parameters?
+		for( p: m.params){
+			if( p instanceof Parameter ){
+				containsParams = true
+				code = code + NodeModelUtils.getTokenText(NodeModelUtils.getNode(p)) + ","
+			}
+		}
+		if(containsParams){
+			code = code.substring(0, code.length-1) // removes the last comma which is not needed
+		}
+		code = code + ")\n"
 		for( s: m.sections ) {
 			if( s instanceof Assignments ){
 				code = code + CompileAssignments( s )
@@ -62,7 +77,7 @@ class ExtendedSMVGenerator implements IGenerator {
 				CompilePatterns( s )
 			}
 			else  {
-				code = code + "UNKNOWN SECTION\n"
+				code = code + '\n' + NodeModelUtils.getTokenText(NodeModelUtils.getNode(s)) + '\n'
 			}
 		} 
 		return code
